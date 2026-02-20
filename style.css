@@ -1,6 +1,5 @@
 /* style.css */
 
-/* 基本設定 */
 body { 
     font-family: 'Helvetica Neue', Arial, sans-serif; 
     background-color: #f0f2f5; 
@@ -34,14 +33,18 @@ h1 {
     padding-bottom: 10px; 
 }
 
-/* --- モード選択タブ（トップ常設） --- */
+/* --- モード選択タブ（空白を詰める修正） --- */
 .mode-selector-top {
     background: #f8f9fa;
-    padding: 15px;
+    padding: 12px; /* 少し詰める */
     border-radius: 12px;
-    margin-bottom: 20px;
+    margin: 0 auto 20px; /* 上の空白をなくす */
     text-align: center;
     border: 1px solid #ddd;
+}
+
+.mode-selector-top p {
+    margin: 0 0 8px 0; /* pタグの余計なマージンを消す */
 }
 
 .mode-tabs {
@@ -57,156 +60,59 @@ h1 {
     border-radius: 8px;
     background: #eee;
     color: #666;
-    margin-top: 0 !important; /* ボタンの基本マージンを打ち消し */
+    margin-top: 0 !important;
     border: 1px solid #ccc;
     cursor: pointer;
     font-weight: bold;
-    transition: all 0.2s;
 }
 
-/* アクティブなタブの状態 */
 .tab-btn.active {
     background: #1a73e8;
     color: white;
     border-color: #1a73e8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
 }
 
-/* おにモードが選ばれている時の特別カラー */
-.tab-btn.active#tab-oni {
-    background: #d93025;
-    border-color: #d93025;
-    box-shadow: 0 4px 10px rgba(217, 48, 37, 0.3);
+/* --- 解説文のスタイル --- */
+.explanation-text {
+    font-size: 0.9rem;
+    font-weight: normal;
+    margin-top: 8px;
+    text-align: left;
+    border-top: 1px solid rgba(217, 48, 37, 0.2);
+    padding-top: 8px;
+    line-height: 1.5;
+    color: #444;
 }
 
-/* --- タイマーバー --- */
+/* --- 以下、既存のスタイル --- */
 .timer-container { 
-    width: 100%; 
-    height: 12px; 
-    background-color: #eee; 
-    border-radius: 6px; 
-    margin: 15px 0; 
-    overflow: hidden; 
-    display: none; 
+    width: 100%; height: 12px; background-color: #eee; 
+    border-radius: 6px; margin: 15px 0; overflow: hidden; display: none; 
 }
+#timer-bar { width: 100%; height: 100%; background-color: #34a853; transition: width 0.1s linear; }
 
-#timer-bar { 
-    width: 100%; 
-    height: 100%; 
-    background-color: #34a853; 
-    transition: width 0.1s linear, background-color 0.3s; 
-}
+.question-box { font-size: 1.8rem; text-align: center; margin: 20px 0; font-weight: bold; color: #333; }
+.guide-msg { text-align: center; color: #666; margin-bottom: 10px; font-weight: bold; }
 
-/* --- クイズ画面 --- */
-.question-box { 
-    font-size: 1.8rem; 
-    text-align: center; 
-    margin: 20px 0; 
-    font-weight: bold; 
-    color: #333; 
-    line-height: 1.6; 
-}
-
-.guide-msg { 
-    text-align: center; 
-    color: #666; 
-    margin-bottom: 10px; 
-    font-weight: bold; 
-}
-
-/* --- ボタン基本 --- */
 button { 
-    width: 100%; 
-    padding: 14px; 
-    font-size: 1.1rem; 
-    border: none; 
-    border-radius: 10px; 
-    cursor: pointer; 
-    transition: background 0.2s, transform 0.1s; 
-    margin-top: 10px; 
+    width: 100%; padding: 14px; font-size: 1.1rem; border: none; 
+    border-radius: 10px; cursor: pointer; margin-top: 10px; 
 }
 
-button:active { 
-    transform: scale(0.98); 
-}
-
-.btn-primary { 
-    background-color: #1a73e8; 
-    color: white; 
-}
-
-/* カテゴリボタンの色分け */
+.btn-primary { background-color: #1a73e8; color: white; }
 .btn-d1 { border-left: 8px solid #3498db; }
 .btn-d2 { border-left: 8px solid #e67e22; }
 .btn-d3 { border-left: 8px solid #27ae60; }
 .btn-d4 { border-left: 8px solid #9b59b6; }
 .btn-d5 { border-left: 8px solid #e74c3c; }
 
-/* ロック状態 */
-.btn-locked { 
-    background-color: #ccc !important; 
-    color: #666 !important; 
-    cursor: not-allowed; 
-    position: relative; 
-}
+.btn-locked { background-color: #ccc !important; color: #666 !important; position: relative; }
+.btn-locked::after { content: "🔒"; position: absolute; right: 15px; }
 
-.btn-locked::after { 
-    content: "🔒"; 
-    position: absolute; 
-    right: 15px; 
-}
-
-/* 4択ボタン */
-.choice-btn { 
-    background-color: #ffffff; 
-    border: 2px solid #1a73e8; 
-    color: #1a73e8; 
-    margin-bottom: 10px; 
-    text-align: left; 
-    padding-left: 20px; 
-}
-
-.choice-btn:hover:not(:disabled) { 
-    background-color: #e8f0fe; 
-}
-
-/* フィードバック */
-.feedback { 
-    padding: 15px; 
-    border-radius: 8px; 
-    margin-top: 20px; 
-    text-align: center; 
-    font-weight: bold; 
-}
-
+.choice-btn { background-color: #ffffff; border: 2px solid #1a73e8; color: #1a73e8; text-align: left; padding-left: 20px; }
+.feedback { padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; font-weight: bold; }
 .correct { background-color: #e6f4ea; color: #1e8e3e; }
 .wrong { background-color: #fce8e6; color: #d93025; }
 
-/* 自己採点エリア */
-.answer-item { 
-    border-bottom: 1px solid #eee; 
-    padding: 10px 0; 
-    font-size: 1.1rem;
-}
-
-input[type="number"] { 
-    width: 70px; 
-    padding: 10px; 
-    font-size: 1.3rem; 
-    text-align: center; 
-    border: 2px solid #ddd;
-    border-radius: 8px;
-}
-
-/* その他 */
-.reset-link { 
-    margin-top: 50px; 
-    text-align: center; 
-}
-
-.reset-link a { 
-    color: #ccc; 
-    font-size: 0.8rem; 
-    text-decoration: none; 
-}
+.reset-link { margin-top: 50px; text-align: center; }
+.reset-link a { color: #ccc; font-size: 0.8rem; text-decoration: none; }
