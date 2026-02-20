@@ -24,7 +24,6 @@
         .choice-btn { background-color: #ffffff; border: 2px solid #1a73e8; color: #1a73e8; margin-bottom: 10px; text-align: left; padding-left: 20px; }
         .choice-btn:hover:not(:disabled) { background-color: #e8f0fe; }
         .choice-btn:disabled { opacity: 0.8; color: #333; }
-        
         .feedback { padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; font-weight: bold; }
         .correct { background-color: #e6f4ea; color: #1e8e3e; }
         .wrong { background-color: #fce8e6; color: #d93025; }
@@ -35,7 +34,6 @@
         #selfcheck-area, #score-area, #level-area, #quiz-area { display: none; }
         .answer-item { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 1rem; }
         input[type="number"] { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
-        #timer { font-size: 1.2rem; color: #d93025; font-weight: bold; text-align: center; margin-bottom: 10px; }
         .reset-link { margin-top: 50px; text-align: center; }
         .reset-link a { color: #ccc; font-size: 0.8rem; text-decoration: none; }
     </style>
@@ -63,7 +61,7 @@
     </div>
 
     <div id="quiz-area">
-        <div id="timer">残り時間: 60秒</div>
+        <div style="text-align:center; color:#d93025; font-size:0.9rem; margin-bottom:10px;">タイムアタックモード（開発中）</div>
         <div id="progress" style="text-align:right; color:#888;"></div>
         <div id="guide" class="guide-msg"></div>
         <div id="question" class="question-box"></div>
@@ -105,8 +103,6 @@
     let currentIdx = 0;
     let autoScore = 0;
     let isChoiceMode = false;
-    let timerInterval;
-    let timeLeft = 60;
 
     window.onload = updateTopProgress;
 
@@ -153,8 +149,7 @@
 
     async function loadStage(cat, level) {
         currentLevel = level;
-        // キャッシュ対策を追加
-        const filePath = `${JSON_BASE_PATH}/stage_${cat}.json?t=${new Date().getTime()}`;
+        const filePath = `${JSON_BASE_PATH}/stage_${cat}.json`;
         try {
             const response = await fetch(filePath);
             const data = await response.json();
@@ -164,24 +159,8 @@
             document.getElementById('level-area').style.display = 'none';
             document.getElementById('score-area').style.display = 'none';
             document.getElementById('quiz-area').style.display = 'block';
-            startTimer();
             loadQuestion();
         } catch (e) { alert(`データ読み込みエラー。`); }
-    }
-
-    function startTimer() {
-        timeLeft = 60;
-        document.getElementById('timer').innerText = `残り時間: ${timeLeft}秒`;
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById('timer').innerText = `残り時間: ${timeLeft}秒`;
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                alert("時間切れ！");
-                finishQuiz();
-            }
-        }, 1000);
     }
 
     function loadQuestion() {
@@ -215,7 +194,7 @@
                     } else {
                         document.getElementById('result-text').innerText = `❌ 正解は「${current.a}」`;
                         feedback.className = "feedback wrong";
-                        // 解説表示ロジック
+                        // 解説文があれば表示
                         if (current.explanation) {
                             expArea.innerHTML = `💡 <b>攻略ヒント:</b> ${current.explanation}`;
                             expArea.style.display = 'block';
@@ -237,14 +216,11 @@
     document.getElementById('next-btn').onclick = () => {
         currentIdx++;
         if (currentIdx < quizData.length) loadQuestion();
-        else finishQuiz();
+        else {
+            document.getElementById('quiz-area').style.display = 'none';
+            isChoiceMode ? showScore(autoScore) : showSelfCheck();
+        }
     };
-
-    function finishQuiz() {
-        clearInterval(timerInterval);
-        document.getElementById('quiz-area').style.display = 'none';
-        isChoiceMode ? showScore(autoScore) : showSelfCheck();
-    }
 
     function showSelfCheck() {
         const listEl = document.getElementById('answer-list');
