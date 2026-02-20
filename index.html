@@ -133,7 +133,21 @@
                 return resp.json();
             })
             .then(data => {
-                quizData = data;
+                // 新しい形式: { levels: [ {level, questions}, ... ] }
+                if (data.levels && Array.isArray(data.levels)) {
+                    const lvl = data.levels.find(l => String(l.level) === String(level));
+                    if (lvl) {
+                        quizData = lvl.questions || [];
+                    } else {
+                        quizData = [];
+                        console.warn('指定レベルが見つかりません', level);
+                    }
+                } else if (Array.isArray(data)) {
+                    // 旧形式をサポート (配列直下)
+                    quizData = data;
+                } else {
+                    quizData = [];
+                }
                 startQuiz();
             })
             .catch(err => {
@@ -207,43 +221,12 @@
         explEl.innerText = current.note || '';
     }
 
+    // 判定ボタン押下 (入力式)
     checkBtn.onclick = () => {
         evaluateAnswer(inputEl.value.trim());
     };
 
-    nextBtn.onclick = () => {
-        currentIdx++;
-        if (currentIdx < quizData.length) {
-            loadQuestion();
-        } else {
-            showScore();
-        }
-    };
-
-    function showScore() {
-        quizArea.style.display = 'none';
-        document.getElementById('score-area').style.display = 'block';
-        document.getElementById('final-score').innerText = score + '点';
-    }
-
-    checkBtn.onclick = () => {
-        const userAns = inputEl.value.trim();
-        const current = quizData[currentIdx];
-        feedbackEl.style.display = 'block';
-        checkBtn.style.display = 'none';
-        nextBtn.style.display = 'block';
-
-        if (userAns === current.a) {
-            resultText.innerText = '⭕ 正解！';
-            feedbackEl.className = 'feedback correct';
-            score += 20;
-        } else {
-            resultText.innerText = `❌ おしい！ 正解は「${current.a}」`;
-            feedbackEl.className = 'feedback wrong';
-        }
-        explEl.innerText = current.note || '';
-    };
-
+    // 次へボタン
     nextBtn.onclick = () => {
         currentIdx++;
         if (currentIdx < quizData.length) {
