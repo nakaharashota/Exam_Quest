@@ -13,6 +13,7 @@
         button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         .btn-primary { background-color: #1a73e8; color: white; }
         .btn-primary:hover { background-color: #1557b0; }
+        
         /* カテゴリごとの色分け */
         .btn-d1 { border-left: 8px solid #3498db; }
         .btn-d2 { border-left: 8px solid #e67e22; }
@@ -104,8 +105,25 @@
     let isChoiceMode = false;
     const TOTAL_QUESTIONS = 5;
 
+    // 起動時に進捗表示を更新
+    window.onload = updateTopProgress;
+
     function resetData() {
         if(confirm('記録を消しますか？')) { localStorage.clear(); location.reload(); }
+    }
+
+    // トップ画面のボタンに進捗を表示する
+    function updateTopProgress() {
+        ['d1', 'd2', 'd3', 'd4', 'd5'].forEach(cat => {
+            const progress = parseInt(localStorage.getItem(cat + '_progress')) || 1;
+            const btn = document.querySelector(`.btn-${cat}`);
+            if (btn) {
+                const baseText = btn.innerText.split(' [')[0];
+                // クリア済みのレベルを表示（最大Lv.5まで）
+                const displayLv = progress > 5 ? 5 : progress;
+                btn.innerText = `${baseText} [Lv.${displayLv}]`;
+            }
+        });
     }
 
     function selectCategory(cat) {
@@ -171,7 +189,6 @@
         const questionEl = document.getElementById('question');
         choicesArea.innerHTML = '';
 
-        // d1, d3, d4, d5 は4択モードとして扱う
         if (currentCategory !== 'd2') {
             isChoiceMode = true;
             document.getElementById('guide').innerText = "正しいものを選んでね！";
@@ -237,7 +254,10 @@
         if (finalScore >= 80) {
             clearMsg.innerText = "🌟 合格！次のレベルが開放されたよ！";
             const currentUnlocked = parseInt(localStorage.getItem(currentCategory + '_progress')) || 1;
-            if (currentLevel >= currentUnlocked) localStorage.setItem(currentCategory + '_progress', currentLevel + 1);
+            if (currentLevel >= currentUnlocked) {
+                localStorage.setItem(currentCategory + '_progress', currentLevel + 1);
+                updateTopProgress(); // トップ画面の表示を更新
+            }
             nextLvBtn.style.display = currentLevel < 5 ? 'block' : 'none';
         } else {
             clearMsg.innerText = "あと少し！もう一度やってみよう。";
