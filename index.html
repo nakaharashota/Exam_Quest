@@ -202,9 +202,9 @@
         const current = quizData[currentIdx];
         feedbackEl.style.display = 'block';
         nextBtn.style.display = 'block';
-        if (inputArea.style.display !== 'none') {
-            checkBtn.style.display = 'none';
-        } else {
+        // 常に判定ボタンは隠す（次へへ誘導）
+        checkBtn.style.display = 'none';
+        if (inputArea.style.display === 'none') {
             // 選択肢の場合はボタン無効化
             Array.from(choicesArea.children).forEach(b => b.disabled = true);
         }
@@ -225,12 +225,21 @@
         evaluateAnswer(inputEl.value.trim());
     };
 
+    // Enter キーで判定（記述式）
+    inputEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && inputArea.style.display !== 'none') {
+            evaluateAnswer(inputEl.value.trim());
+            e.preventDefault();
+        }
+    });
+
     // 次へボタン
     nextBtn.onclick = () => {
         currentIdx++;
-        if (currentIdx < quizData.length) {
+        if (currentIdx < quizData.length && quizData[currentIdx]) {
             loadQuestion();
         } else {
+            // 配列外または undefined なら即リザルト
             showScore();
         }
     };
