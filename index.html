@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam_Quest | 漢字攻略</title>
+    <title>漢字クエスト 〜新4年生漢字編〜</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
         .card { background: white; border-radius: 15px; width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        h1 { color: #1a73e8; text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
+        h1 { color: #1a73e8; text-align: center; font-size: 1.5rem; margin-bottom: 5px; }
+        .sub-title { text-align: center; color: #5f6368; font-size: 1rem; margin-bottom: 20px; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
         .question-box { font-size: 1.8rem; text-align: center; margin: 30px 0; font-weight: bold; color: #333; line-height: 1.6; }
         .guide-msg { text-align: center; color: #666; margin-bottom: 10px; font-weight: bold; }
         button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
@@ -40,7 +41,8 @@
 <body>
 
 <div class="card">
-    <h1>Exam_Quest</h1>
+    <h1>漢字クエスト</h1>
+    <div class="sub-title">〜新4年生漢字編〜</div>
 
     <div id="category-area">
         <p style="text-align:center;">カテゴリを選んでね</p>
@@ -97,6 +99,10 @@
 </div>
 
 <script>
+    /* --- 拡張用設定 --- */
+    const CURRENT_COURSE = 'shin4_kanji'; // ここを変えるだけで学年/教科を切り替え可能
+    const JSON_BASE_PATH = `assets/json/${CURRENT_COURSE}/`;
+    
     let currentCategory = '';
     let currentLevel = 1;
     let quizData = [];
@@ -105,21 +111,19 @@
     let isChoiceMode = false;
     const TOTAL_QUESTIONS = 5;
 
-    // 起動時に進捗表示を更新
     window.onload = updateTopProgress;
 
     function resetData() {
         if(confirm('記録を消しますか？')) { localStorage.clear(); location.reload(); }
     }
 
-    // トップ画面のボタンに進捗を表示する
     function updateTopProgress() {
         ['d1', 'd2', 'd3', 'd4', 'd5'].forEach(cat => {
-            const progress = parseInt(localStorage.getItem(cat + '_progress')) || 1;
+            // 保存キーもコース名を含めることで、将来的に混ざらないように設計
+            const progress = parseInt(localStorage.getItem(`${CURRENT_COURSE}_${cat}_progress`)) || 1;
             const btn = document.querySelector(`.btn-${cat}`);
             if (btn) {
                 const baseText = btn.innerText.split(' [')[0];
-                // クリア済みのレベルを表示（最大Lv.5まで）
                 const displayLv = progress > 5 ? 5 : progress;
                 btn.innerText = `${baseText} [Lv.${displayLv}]`;
             }
@@ -130,13 +134,7 @@
         currentCategory = cat;
         document.getElementById('category-area').style.display = 'none';
         document.getElementById('level-area').style.display = 'block';
-        const titles = {
-            'd1': '【読み】', 
-            'd2': '【書き】', 
-            'd3': '【使い分け】',
-            'd4': '【熟語】',
-            'd5': '【究極】'
-        };
+        const titles = { 'd1': '【読み】', 'd2': '【書き】', 'd3': '【使い分け】', 'd4': '【熟語】', 'd5': '【究極】' };
         document.getElementById('level-title').innerText = titles[cat] + "レベルを選んでね";
         renderLevels();
     }
@@ -144,7 +142,7 @@
     function renderLevels() {
         const btnContainer = document.getElementById('level-buttons');
         btnContainer.innerHTML = '';
-        const unlockedLevel = parseInt(localStorage.getItem(currentCategory + '_progress')) || 1;
+        const unlockedLevel = parseInt(localStorage.getItem(`${CURRENT_COURSE}_${currentCategory}_progress`)) || 1;
         for(let lv=1; lv<=5; lv++) {
             const btn = document.createElement('button');
             if (lv <= unlockedLevel) {
@@ -162,7 +160,7 @@
 
     async function loadStage(cat, level) {
         currentLevel = level;
-        const filePath = `assets/json/stage_${cat}.json`;
+        const filePath = `${JSON_BASE_PATH}stage_${cat}.json`;
         try {
             const response = await fetch(filePath);
             if (!response.ok) throw new Error();
@@ -180,6 +178,7 @@
         }
     }
 
+    /* --- loadQuestion以降のロジックは前回と同様 --- */
     function loadQuestion() {
         const current = quizData[currentIdx];
         document.getElementById('progress').innerText = `${currentIdx + 1} / ${TOTAL_QUESTIONS}`;
@@ -253,10 +252,10 @@
         const nextLvBtn = document.getElementById('next-lv-btn');
         if (finalScore >= 80) {
             clearMsg.innerText = "🌟 合格！次のレベルが開放されたよ！";
-            const currentUnlocked = parseInt(localStorage.getItem(currentCategory + '_progress')) || 1;
+            const currentUnlocked = parseInt(localStorage.getItem(`${CURRENT_COURSE}_${currentCategory}_progress`)) || 1;
             if (currentLevel >= currentUnlocked) {
-                localStorage.setItem(currentCategory + '_progress', currentLevel + 1);
-                updateTopProgress(); // トップ画面の表示を更新
+                localStorage.setItem(`${CURRENT_COURSE}_${currentCategory}_progress`, currentLevel + 1);
+                updateTopProgress();
             }
             nextLvBtn.style.display = currentLevel < 5 ? 'block' : 'none';
         } else {
