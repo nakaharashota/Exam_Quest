@@ -13,9 +13,13 @@
         button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         .btn-primary { background-color: #1a73e8; color: white; }
         .btn-primary:hover { background-color: #1557b0; }
+        /* カテゴリごとの色分け */
         .btn-d1 { border-left: 8px solid #3498db; }
         .btn-d2 { border-left: 8px solid #e67e22; }
         .btn-d3 { border-left: 8px solid #27ae60; }
+        .btn-d4 { border-left: 8px solid #9b59b6; }
+        .btn-d5 { border-left: 8px solid #e74c3c; }
+        
         .btn-locked { background-color: #ccc; color: #666; cursor: not-allowed; position: relative; }
         .btn-locked::after { content: "🔒"; position: absolute; right: 15px; }
         .choice-btn { background-color: #ffffff; border: 2px solid #1a73e8; color: #1a73e8; margin-bottom: 10px; text-align: left; padding-left: 20px; }
@@ -42,6 +46,8 @@
         <button class="btn-primary btn-d1" onclick="selectCategory('d1')">① 読みの試練（4択）</button>
         <button class="btn-primary btn-d2" onclick="selectCategory('d2')">② 書きの関所（ノート）</button>
         <button class="btn-primary btn-d3" onclick="selectCategory('d3')">③ 使い分けの迷宮（4択）</button>
+        <button class="btn-primary btn-d4" onclick="selectCategory('d4')">④ 熟語の試練（4択）</button>
+        <button class="btn-primary btn-d5" onclick="selectCategory('d5')">⑤ 究極の使い分け（4択）</button>
 
         <div class="mode-section">
             <p style="color:#888; font-size:0.9rem;">【現在のモード：じっくり学習】</p>
@@ -106,7 +112,13 @@
         currentCategory = cat;
         document.getElementById('category-area').style.display = 'none';
         document.getElementById('level-area').style.display = 'block';
-        const titles = {'d1': '【読み】', 'd2': '【書き】', 'd3': '【使い分け】'};
+        const titles = {
+            'd1': '【読み】', 
+            'd2': '【書き】', 
+            'd3': '【使い分け】',
+            'd4': '【熟語】',
+            'd5': '【究極】'
+        };
         document.getElementById('level-title').innerText = titles[cat] + "レベルを選んでね";
         renderLevels();
     }
@@ -159,7 +171,8 @@
         const questionEl = document.getElementById('question');
         choicesArea.innerHTML = '';
 
-        if (currentCategory === 'd1' || currentCategory === 'd3') {
+        // d1, d3, d4, d5 は4択モードとして扱う
+        if (currentCategory !== 'd2') {
             isChoiceMode = true;
             document.getElementById('guide').innerText = "正しいものを選んでね！";
             questionEl.innerText = current.q;
