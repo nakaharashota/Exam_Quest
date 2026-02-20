@@ -1,0 +1,89 @@
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+.card {
+    background: white;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 500px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+h1 { color: #1a73e8; text-align: center; font-size: 1.5rem; margin-bottom: 5px; }
+.sub-title {
+    text-align: center;
+    color: #5f6368;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #1a73e8;
+    padding-bottom: 10px;
+}
+.question-box {
+    font-size: 1.8rem;
+    text-align: center;
+    margin: 30px 0;
+    font-weight: bold;
+    color: #333;
+    line-height: 1.6;
+}
+.guide-msg { text-align: center; color: #666; margin-bottom: 10px; font-weight: bold; }
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 10px;
+}
+.btn-primary { background-color: #1a73e8; color: white; }
+.btn-primary:hover { background-color: #1557b0; }
+
+.btn-d1 { border-left: 8px solid #3498db; }
+.btn-d2 { border-left: 8px solid #e67e22; }
+.btn-d3 { border-left: 8px solid #27ae60; }
+.btn-d4 { border-left: 8px solid #9b59b6; }
+.btn-d5 { border-left: 8px solid #e74c3c; }
+
+.btn-locked { background-color: #ccc; color: #666; cursor: not-allowed; position: relative; }
+.btn-locked::after { content: "🔒"; position: absolute; right: 15px; }
+
+.choice-btn {
+    background-color: #ffffff;
+    border: 2px solid #1a73e8;
+    color: #1a73e8;
+    margin-bottom: 10px;
+    text-align: left;
+    padding-left: 20px;
+}
+.choice-btn:hover:not(:disabled) { background-color: #e8f0fe; }
+.choice-btn:disabled { opacity: 0.8; color: #333; }
+
+.feedback { padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; font-weight: bold; }
+.correct { background-color: #e6f4ea; color: #1e8e3e; }
+.wrong { background-color: #fce8e6; color: #d93025; }
+
+/* 解説エリア：赤い点線を削除 */
+.exp-box {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: #444;
+    text-align: left;
+    font-weight: normal;
+    line-height: 1.4;
+}
+
+#selfcheck-area, #score-area, #level-area, #quiz-area { display: none; }
+.answer-item { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 1rem; }
+input[type="number"] { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
+.mode-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #eee; text-align: center; }
+.reset-link { margin-top: 50px; text-align: center; }
+.reset-link a { color: #ccc; font-size: 0.8rem; text-decoration: none; }
