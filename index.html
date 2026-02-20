@@ -169,12 +169,15 @@
         const questionEl = document.getElementById('question');
         
         choicesArea.innerHTML = '';
-        // choicesがある場合は「4択モード」として動く（d1とd3）
-        if (current.choices && current.choices.length > 0) {
+
+        // ★ここを修正：d1 または d3 の場合は、必ず4択モード（isChoiceMode = true）にする
+        if (currentCategory === 'd1' || currentCategory === 'd3') {
             isChoiceMode = true;
             document.getElementById('guide').innerText = "正しいものを選んでね！";
             questionEl.innerText = current.q;
             nextBtn.style.display = 'none';
+
+            // 選択肢を表示
             [...current.choices].sort(() => 0.5 - Math.random()).forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
@@ -196,7 +199,7 @@
                 choicesArea.appendChild(btn);
             });
         } else {
-            // choicesがない場合は「自己採点モード」として動く（d2）
+            // d2（書き）の場合は、ノートに書くモード
             isChoiceMode = false;
             document.getElementById('guide').innerText = "ノートに漢字を書いてね！";
             questionEl.innerText = current.q.replace('（　）', `（ ${current.k || ''} ）`);
