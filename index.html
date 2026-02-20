@@ -7,10 +7,8 @@
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
         .card { background: white; border-radius: 15px; width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        /* 黄金デザインを維持 */
-        h1 { color: #d4af37; text-align: center; font-size: 1.8rem; margin-bottom: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .sub-title { text-align: center; color: #5f6368; font-size: 1rem; margin-bottom: 20px; border-bottom: 3px solid #d4af37; padding-bottom: 10px; }
-        
+        h1 { color: #1a73e8; text-align: center; font-size: 1.5rem; margin-bottom: 5px; }
+        .sub-title { text-align: center; color: #5f6368; font-size: 1rem; margin-bottom: 20px; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
         .question-box { font-size: 1.8rem; text-align: center; margin: 30px 0; font-weight: bold; color: #333; line-height: 1.6; }
         .guide-msg { text-align: center; color: #666; margin-bottom: 10px; font-weight: bold; }
         button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
@@ -27,15 +25,17 @@
         .choice-btn:hover:not(:disabled) { background-color: #e8f0fe; }
         .choice-btn:disabled { opacity: 0.8; color: #333; }
         
-        /* 解説エリアのスタイルを追加 */
         .feedback { padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; font-weight: bold; }
         .correct { background-color: #e6f4ea; color: #1e8e3e; }
         .wrong { background-color: #fce8e6; color: #d93025; }
+        
+        /* 解説エリアのスタイルのみ追加 */
         .exp-box { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 5px; font-size: 0.9rem; color: #444; text-align: left; font-weight: normal; border: 1px dashed #d93025; line-height: 1.4; }
 
         #selfcheck-area, #score-area, #level-area, #quiz-area { display: none; }
         .answer-item { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 1rem; }
         input[type="number"] { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
+        #timer { font-size: 1.2rem; color: #d93025; font-weight: bold; text-align: center; margin-bottom: 10px; }
         .reset-link { margin-top: 50px; text-align: center; }
         .reset-link a { color: #ccc; font-size: 0.8rem; text-decoration: none; }
     </style>
@@ -63,6 +63,7 @@
     </div>
 
     <div id="quiz-area">
+        <div id="timer">残り時間: 60秒</div>
         <div id="progress" style="text-align:right; color:#888;"></div>
         <div id="guide" class="guide-msg"></div>
         <div id="question" class="question-box"></div>
@@ -86,7 +87,7 @@
 
     <div id="score-area">
         <h2 style="text-align:center;">結果発表</h2>
-        <div id="final-score" style="font-size:3rem; text-align:center; color:#d4af37; margin:20px 0; font-weight:bold;"></div>
+        <div id="final-score" style="font-size:3rem; text-align:center; color:#1a73e8; margin:20px 0; font-weight:bold;"></div>
         <div id="clear-msg" style="text-align:center; margin-bottom:20px; font-weight:bold; color:#1e8e3e;"></div>
         <button class="btn-primary" id="retry-btn">リトライ</button>
         <button class="btn-primary" id="next-lv-btn" style="background-color:#34a853;">次のレベルへ</button>
@@ -104,6 +105,8 @@
     let currentIdx = 0;
     let autoScore = 0;
     let isChoiceMode = false;
+    let timerInterval;
+    let timeLeft = 60;
 
     window.onload = updateTopProgress;
 
@@ -150,7 +153,7 @@
 
     async function loadStage(cat, level) {
         currentLevel = level;
-        // キャッシュ対策：タイムスタンプを付与
+        // キャッシュ対策を追加
         const filePath = `${JSON_BASE_PATH}/stage_${cat}.json?t=${new Date().getTime()}`;
         try {
             const response = await fetch(filePath);
@@ -161,8 +164,24 @@
             document.getElementById('level-area').style.display = 'none';
             document.getElementById('score-area').style.display = 'none';
             document.getElementById('quiz-area').style.display = 'block';
+            startTimer();
             loadQuestion();
-        } catch (e) { alert(`データ読み込みエラー。ファイルとパスを確認してください。`); }
+        } catch (e) { alert(`データ読み込みエラー。`); }
+    }
+
+    function startTimer() {
+        timeLeft = 60;
+        document.getElementById('timer').innerText = `残り時間: ${timeLeft}秒`;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = `残り時間: ${timeLeft}秒`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert("時間切れ！");
+                finishQuiz();
+            }
+        }, 1000);
     }
 
     function loadQuestion() {
@@ -197,7 +216,7 @@
                         document.getElementById('result-text').innerText = `❌ 正解は「${current.a}」`;
                         feedback.className = "feedback wrong";
                         // 解説表示ロジック
-                        if (current.explanation && current.explanation !== "") {
+                        if (current.explanation) {
                             expArea.innerHTML = `💡 <b>攻略ヒント:</b> ${current.explanation}`;
                             expArea.style.display = 'block';
                         }
@@ -218,11 +237,14 @@
     document.getElementById('next-btn').onclick = () => {
         currentIdx++;
         if (currentIdx < quizData.length) loadQuestion();
-        else {
-            document.getElementById('quiz-area').style.display = 'none';
-            isChoiceMode ? showScore(autoScore) : showSelfCheck();
-        }
+        else finishQuiz();
     };
+
+    function finishQuiz() {
+        clearInterval(timerInterval);
+        document.getElementById('quiz-area').style.display = 'none';
+        isChoiceMode ? showScore(autoScore) : showSelfCheck();
+    }
 
     function showSelfCheck() {
         const listEl = document.getElementById('answer-list');
@@ -245,6 +267,27 @@
         const clearMsg = document.getElementById('clear-msg');
         const nextLvBtn = document.getElementById('next-lv-btn');
         if (finalScore >= 80) {
-            clearMsg.innerText = "🌟 合格！次のレベルが開放されました！";
+            clearMsg.innerText = "🌟 合格！次のレベルが開放されたよ！";
             const storageKey = `${CURRENT_COURSE}_${currentCategory}_progress`;
             const currentUnlocked = parseInt(localStorage.getItem(storageKey)) || 1;
+            if (currentLevel >= currentUnlocked) {
+                localStorage.setItem(storageKey, currentLevel + 1);
+                updateTopProgress();
+            }
+            nextLvBtn.style.display = currentLevel < 5 ? 'block' : 'none';
+        } else {
+            clearMsg.innerText = "あと少し！もう一度やってみよう。";
+            nextLvBtn.style.display = 'none';
+        }
+        document.getElementById('retry-btn').onclick = () => loadStage(currentCategory, currentLevel);
+        nextLvBtn.onclick = () => loadStage(currentCategory, currentLevel + 1);
+    }
+
+    function backToLevels() {
+        document.getElementById('score-area').style.display = 'none';
+        document.getElementById('level-area').style.display = 'block';
+        renderLevels();
+    }
+</script>
+</body>
+</html>
