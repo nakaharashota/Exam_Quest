@@ -6,325 +6,237 @@
     <title>Exam_Quest | 漢字攻略</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; border-radius: 15px; shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .card { background: white; border-radius: 15px; width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         h1 { color: #1a73e8; text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
-        .question-box { font-size: 2rem; text-align: center; margin: 30px 0; font-weight: bold; color: #333; }
-        input[type="text"] { width: 100%; padding: 12px; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
-        button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-        .btn-category { margin-bottom: 8px; background-color: #ffca28; color: #333; font-size: 1.2rem; }
-        .btn-level { margin-bottom: 6px; background-color: #29b6f6; color: white; }
-        .choice-btn { margin: 4px 0; background-color: #fbbc05; color: #333; }
-        .btn-check { background-color: #1a73e8; color: white; }
-        .btn-next { background-color: #34a853; color: white; display: none; }
-        .feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
-        .correct { background-color: #e6f4ea; color: #1e8e3e; border: 1px solid #1e8e3e; }
-        .wrong { background-color: #fce8e6; color: #d93025; border: 1px solid #d93025; }
-        .note { font-size: 0.9rem; margin-top: 10px; color: #555; line-height: 1.5; }
-        .score-screen { text-align: center; display: none; }
+        .question-box { font-size: 1.8rem; text-align: center; margin: 30px 0; font-weight: bold; color: #333; line-height: 1.6; }
+        .guide-msg { text-align: center; color: #666; margin-bottom: 10px; font-weight: bold; }
+        button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        .btn-primary { background-color: #1a73e8; color: white; }
+        .btn-primary:hover { background-color: #1557b0; }
+        .choice-btn { background-color: #ffffff; border: 2px solid #1a73e8; color: #1a73e8; margin-bottom: 10px; text-align: left; padding-left: 20px; }
+        .choice-btn:hover { background-color: #e8f0fe; }
+        .choice-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .feedback { padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; font-weight: bold; }
+        .correct { background-color: #e6f4ea; color: #1e8e3e; }
+        .wrong { background-color: #fce8e6; color: #d93025; }
+        #selfcheck-area, #score-area, #level-area, #quiz-area { display: none; }
+        .answer-item { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 1rem; }
+        input[type="number"] { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="card" id="game-container">
-    <h1>⚔️ Exam_Quest 漢字編</h1>
-    
-    <!--カテゴリ選択画面-->
+<div class="card">
+    <h1>Exam_Quest</h1>
+
     <div id="category-area">
-        <p>挑戦したいカテゴリを選択してください</p>
-        <button class="btn-category" data-cat="1">① 読みの試練</button>
-        <button class="btn-category" data-cat="2">② 書きの試練</button>
-        <button class="btn-category" data-cat="3">③ 四字熟語の塔</button>
-        <button class="btn-category" data-cat="4">④ 漢字クイズ道場</button>
-        <button class="btn-category" data-cat="5">⑤ 間違い探しの城</button>
+        <p style="text-align:center;">モードを選んでね</p>
+        <button class="btn-primary" onclick="selectCategory('d1')">① 読みの試練（4択）</button>
+        <button class="btn-primary" onclick="selectCategory('d2')">② 書きの関所（ノート）</button>
     </div>
 
-    <!--レベル選択画面-->
-    <div id="level-area" style="display:none;">
-        <p id="level-title">レベルを選んでください</p>
-        <button class="btn-level" data-level="1">Lv.1</button>
-        <button class="btn-level" data-level="2">Lv.2</button>
-        <button class="btn-level" data-level="3">Lv.3</button>
-        <button class="btn-level" data-level="4">Lv.4</button>
-        <button class="btn-level" data-level="5">Lv.5</button>
-        <button id="back-to-cat" style="margin-top:10px;">◀ カテゴリへ戻る</button>
+    <div id="level-area">
+        <button onclick="backToCategory()">← もどる</button>
+        <div id="level-buttons"></div>
     </div>
 
-    <!--クイズ部分-->
-    <div id="quiz-area" style="display:none;">
-        <div id="progress">第 1 問 / 5問</div>
-        <div class="question-box" id="question">太陽</div>
-        <div id="choices-area" style="display:none;">
-            <!-- 選択肢ボタンはここに動的生成 -->
+    <div id="quiz-area">
+        <div id="progress" style="text-align:right; color:#888;"></div>
+        <div id="guide" class="guide-msg"></div>
+        <div id="question" class="question-box"></div>
+        
+        <div id="choices-area"></div>
+
+        <div id="feedback" class="feedback">
+            <div id="result-text"></div>
+            <div id="explanation" style="font-size: 0.9rem; margin-top:5px;"></div>
         </div>
-        <!-- 書き問題用のラベル -->
-        <div id="input-label" style="text-align:center; font-size:1.1rem; margin-bottom:5px;"></div>
-        <div id="input-area">
-            <input type="text" id="answer-input" placeholder="漢字を入力..." autocomplete="off">
-            <button class="btn-check" id="check-btn">判定する</button>
-        </div>
-        <div class="feedback" id="feedback">
-            <div id="result-text" style="font-weight: bold;"></div>
-            <div class="note" id="explanation"></div>
-            <button class="btn-next" id="next-btn" style="margin-top: 15px;">次の問題へ ➔</button>
-        </div>
+
+        <button id="next-btn" class="btn-primary" style="display:none;">次へ進む</button>
     </div>
 
-    <div class="score-screen" id="score-area" style="display:none;">
-        <h2>結果発表</h2>
-        <div style="font-size: 3rem; margin: 20px 0;" id="final-score">0点</div>
-        <button class="btn-check" id="retry-btn">もう一度挑戦する</button>
-        <button class="btn-check" id="restart-btn" style="margin-top:8px;">最初に戻る</button>
-    </div>
-
-    <!-- 自己採点用画面 -->
-    <div class="score-screen" id="selfcheck-area" style="display:none;">
+    <div id="selfcheck-area">
         <h2>答え合わせ</h2>
-        <div id="answer-list" style="text-align:left; margin:10px 0;"></div>
-        <label>何問正解した？ <input type="number" id="self-count" min="0" max="5" value="0" style="width:4rem;"></label>
-        <button class="btn-check" id="calc-score-btn" style="margin-top:10px;">点数を出す</button>
+        <p>ノートの漢字と見比べてね！</p>
+        <div id="answer-list" style="margin-bottom:20px; text-align:left;"></div>
+        <div style="text-align:center; border-top: 2px solid #eee; padding-top:20px;">
+            <p>何問正解だった？</p>
+            <input type="number" id="self-count" min="0" max="5" value="0"> 問 / 5問
+            <button class="btn-primary" id="calc-score-btn">点数を出す</button>
+        </div>
+    </div>
+
+    <div id="score-area">
+        <h2 style="text-align:center;">結果発表</h2>
+        <div id="final-score" style="font-size:3rem; text-align:center; color:#1a73e8; margin:20px 0;"></div>
+        <button class="btn-primary" onclick="location.reload()">もう一度あそぶ</button>
+        <button style="background:#eee;" onclick="backToCategory()">カテゴリ選択へ</button>
     </div>
 </div>
 
 <script>
+    let currentCategory = '';
     let quizData = [];
     let currentIdx = 0;
     let score = 0;
-    let selectedCategory = null;
-    let selectedLevel = null;
+    const TOTAL_QUESTIONS = 5;
 
-    // utility: in-place shuffle
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-
-    const qEl = document.getElementById('question');
-    const inputEl = document.getElementById('answer-input');
-    const checkBtn = document.getElementById('check-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const feedbackEl = document.getElementById('feedback');
-    const resultText = document.getElementById('result-text');
-    const explEl = document.getElementById('explanation');
-    const progressEl = document.getElementById('progress');
-
-    const choicesArea = document.getElementById('choices-area');
-    const inputArea = document.getElementById('input-area');
-    const categoryArea = document.getElementById('category-area');
-    const levelArea = document.getElementById('level-area');
-    const quizArea = document.getElementById('quiz-area');
-    const levelTitle = document.getElementById('level-title');
-    const backToCatBtn = document.getElementById('back-to-cat');
-
-    // カテゴリボタンにイベント
-    document.querySelectorAll('.btn-category').forEach(btn => {
-        btn.addEventListener('click', () => {
-            selectedCategory = btn.dataset.cat;
-            showLevels(selectedCategory);
-        });
-    });
-
-    // レベルボタン
-    document.querySelectorAll('.btn-level').forEach(btn => {
-        btn.addEventListener('click', () => {
-            selectedLevel = btn.dataset.level;
-            loadStage(selectedCategory, selectedLevel);
-        });
-    });
-
-    backToCatBtn.addEventListener('click', () => {
-        levelArea.style.display = 'none';
-        categoryArea.style.display = 'block';
-    });
-
-    function showLevels(cat) {
-        levelTitle.innerText = `カテゴリ ${cat} のレベルを選択`;
-        categoryArea.style.display = 'none';
+    function selectCategory(cat) {
+        currentCategory = cat;
+        document.getElementById('category-area').style.display = 'none';
+        const levelArea = document.getElementById('level-area');
         levelArea.style.display = 'block';
+        
+        const btnContainer = document.getElementById('level-buttons');
+        btnContainer.innerHTML = '';
+        [1,2,3,4,5].forEach(lv => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-primary';
+            btn.innerText = `レベル ${lv}`;
+            btn.onclick = () => loadStage(cat, lv);
+            btnContainer.appendChild(btn);
+        });
     }
 
-    function loadStage(cat, level) {
-        const path = `assets/json/stage_d${cat}.json`;
-        fetch(path)
-            .then(resp => {
-                if (!resp.ok) throw new Error('読み込み失敗');
-                return resp.json();
-            })
-            .then(data => {
-                // 新フォーマットでは data.levels の中に各レベルの問題群が入る
-                if (data && data.levels && Array.isArray(data.levels)) {
-                    const levelData = data.levels.find(l => l.level == level);
-                    quizData = levelData && Array.isArray(levelData.questions) ? levelData.questions : [];
-                } else if (Array.isArray(data)) {
-                    // 旧フォーマット（直接配列）にも対応
-                    quizData = data;
-                } else {
-                    quizData = [];
-                }
-                // リストをシャッフルして先頭5問を抽出
-                if (Array.isArray(quizData) && quizData.length > 1) {
-                    shuffleArray(quizData);
-                    quizData = quizData.slice(0, 5);
-                }
-                startQuiz();
-            })
-            .catch(err => {
-                alert('問題データの読み込みに失敗しました');
-                console.error(err);
-            });
+    function backToCategory() {
+        location.reload();
     }
 
-    function startQuiz() {
-        levelArea.style.display = 'none';
-        quizArea.style.display = 'block';
-        currentIdx = 0;
-        score = 0;
-        if (Array.isArray(quizData) && quizData.length > 0) {
+    async function loadStage(cat, level) {
+        try {
+            const response = await fetch(`assets/json/stage_${cat}.json`);
+            const data = await response.json();
+            
+            // レベルに合った問題を取得
+            let allQuestions = [];
+            if (data.levels) {
+                const levelData = data.levels.find(l => l.level == level);
+                allQuestions = levelData ? levelData.questions : [];
+            } else {
+                allQuestions = data; // 旧形式対応
+            }
+
+            // シャッフルして5問選ぶ
+            quizData = allQuestions.sort(() => 0.5 - Math.random()).slice(0, TOTAL_QUESTIONS);
+            
+            if (quizData.length === 0) {
+                alert("問題が見つかりませんでした。");
+                return;
+            }
+
+            currentIdx = 0;
+            score = 0;
+            document.getElementById('level-area').style.display = 'none';
+            document.getElementById('quiz-area').style.display = 'block';
             loadQuestion();
-        } else {
-            console.warn('quizData は空です。問題が読み込まれていないか、level が間違っています');
+        } catch (e) {
+            console.error(e);
+            alert("データの読み込みに失敗しました。");
         }
     }
 
     function loadQuestion() {
         const current = quizData[currentIdx];
-        // 書き問題の場合は k を使ってヒント表示
-        if ((!current.choices || current.choices.length === 0) && current.k) {
-            qEl.innerText = current.q.replace('（　）', `（${current.k}）`);
-        } else {
-            qEl.innerText = current.q;
-        }
-        feedbackEl.style.display = 'none';
-        progressEl.innerText = `第 ${currentIdx + 1} 問 / ${quizData.length}問`;
-
-        // ラベル初期化
-        document.getElementById('input-label').innerText = '';
-        // 回答エリア初期化
-        inputArea.style.display = 'none';
-        choicesArea.style.display = 'none';
-        checkBtn.style.display = 'none';
+        document.getElementById('progress').innerText = `${currentIdx + 1} / ${TOTAL_QUESTIONS}`;
+        document.getElementById('feedback').style.display = 'none';
+        const nextBtn = document.getElementById('next-btn');
+        const choicesArea = document.getElementById('choices-area');
+        const guide = document.getElementById('guide');
+        
+        choicesArea.innerHTML = '';
         nextBtn.style.display = 'none';
 
         if (current.choices && current.choices.length > 0) {
-            // 読み問題 (4択)
-            choicesArea.style.display = 'block';
+            // --- 選択問題モード ---
+            guide.innerText = "正しい読みを選んでね！";
+            document.getElementById('question').innerText = current.q;
+            
+            const shuffledChoices = [...current.choices].sort(() => 0.5 - Math.random());
+            shuffledChoices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerText = choice;
+                btn.onclick = () => evaluateChoice(choice, current.a);
+                choicesArea.appendChild(btn);
+            });
         } else {
-            // 書き問題 (ノート学習モード)
-            document.getElementById('input-label').innerText = 'ノートに書いたら「次へ」を押してね';
-            // 次へボタンは常に表示
+            // --- 書き問題モード (ノート学習) ---
+            guide.innerText = "ノートに漢字を書いてね！";
+            // 問題文に読み仮名を挿入
+            const qText = current.q.replace('（　）', `（ ${current.k} ）`);
+            document.getElementById('question').innerText = qText;
+            
+            // 「次へ」ボタンを最初から出す
             nextBtn.style.display = 'block';
         }
     }
 
-    function populateChoices(choices) {
-        choicesArea.innerHTML = '';
-        choices.forEach(choice => {
-            const btn = document.createElement('button');
-            btn.className = ' choice-btn';
-            btn.textContent = choice;
-            btn.dataset.value = choice;
-            btn.addEventListener('click', () => {
-                evaluateAnswer(choice);
-            });
-            choicesArea.appendChild(btn);
-        });
-    }
-
-    function evaluateAnswer(ans) {
-        const current = quizData[currentIdx];
-        feedbackEl.style.display = 'block';
-        nextBtn.style.display = 'block';
-        // 判定ボタンは隠す（次へへ誘導）
-        checkBtn.style.display = 'none';
-
-        // 選択肢があればボタンを無効化して比較
-        if (current.choices && current.choices.length > 0) {
-            Array.from(choicesArea.children).forEach(b => b.disabled = true);
-        }
-
-        const correct = ans === current.a;
-        if (correct) {
-            resultText.innerText = '⭕ 正解！';
-            feedbackEl.className = 'feedback correct';
+    function evaluateChoice(selected, correct) {
+        const feedback = document.getElementById('feedback');
+        const resText = document.getElementById('result-text');
+        const nextBtn = document.getElementById('next-btn');
+        
+        // ボタンを無効化
+        Array.from(document.getElementsByClassName('choice-btn')).forEach(b => b.disabled = true);
+        
+        if (selected === correct) {
+            resText.innerText = "⭕ 正解！";
+            feedback.className = "feedback correct";
             score += 20;
         } else {
-            resultText.innerText = `❌ おしい！ 正解は「${current.a}」`;
-            feedbackEl.className = 'feedback wrong';
+            resText.innerText = `❌ 残念！ 正解は「${correct}」`;
+            feedback.className = "feedback wrong";
         }
-        explEl.innerText = current.note || '';
+        feedback.style.display = 'block';
+        nextBtn.style.display = 'block';
     }
 
-    // 判定ボタン押下 (入力式)
-    checkBtn.onclick = () => {
-        evaluateAnswer(inputEl.value.trim());
-    };
-
-    // Enter キーで判定（記述式）
-    inputEl.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && inputArea.style.display !== 'none') {
-            evaluateAnswer(inputEl.value.trim());
-            e.preventDefault();
-        }
-    });
-
-    // 次へボタン
-    nextBtn.onclick = () => {
-        const last = quizData[currentIdx];
+    document.getElementById('next-btn').onclick = () => {
         currentIdx++;
-        if (currentIdx < quizData.length && quizData[currentIdx]) {
+        if (currentIdx < quizData.length) {
             loadQuestion();
         } else {
-            // 終了時の挙動は問題タイプで分岐
-            if (last && last.choices && last.choices.length > 0) {
-                // 選択問題は自動スコア画面へ
-                showScore();
-            } else {
-                // 書き問題は自己採点を挟む
-                showSelfCheck();
-            }
+            finishQuiz();
         }
     };
 
-    // リザルト画面のボタンイベント
-    document.getElementById('retry-btn').addEventListener('click', () => {
-        location.reload();
-    });
-    document.getElementById('restart-btn').addEventListener('click', () => {
-        // カテゴリ選択に戻す
-        document.getElementById('score-area').style.display = 'none';
-        categoryArea.style.display = 'block';
-    });
-    // 自己採点用ボタン
-    document.getElementById('calc-score-btn').addEventListener('click', () => {
-        const count = parseInt(document.getElementById('self-count').value, 10) || 0;
-        score = count * 20;
-        document.getElementById('selfcheck-area').style.display = 'none';
-        showScore();
-    });
+    function finishQuiz() {
+        document.getElementById('quiz-area').style.display = 'none';
+        const current = quizData[0];
+        
+        if (current.choices && current.choices.length > 0) {
+            // 選択問題なら即リザルト
+            showScore(score);
+        } else {
+            // 書き問題なら自己採点画面へ
+            showSelfCheck();
+        }
+    }
 
     function showSelfCheck() {
-        quizArea.style.display = 'none';
         const listEl = document.getElementById('answer-list');
         listEl.innerHTML = '';
         quizData.forEach((item, idx) => {
-            const text = (item.choices && item.choices.length > 0)
-                ? item.q
-                : item.q.replace('（　）', `（${item.k || ''}）`);
-            const p = document.createElement('p');
-            p.style.margin = '4px 0';
-            p.textContent = `${idx + 1}. ${text} → ${item.a}`;
-            listEl.appendChild(p);
+            const div = document.createElement('div');
+            div.className = 'answer-item';
+            const qShow = item.q.replace('（　）', `（${item.k}）`);
+            div.innerHTML = `<strong>${idx + 1}.</strong> ${qShow} <br> <span style="color:#d93025; font-size:1.2rem; margin-left:20px;">正解：${item.a}</span>`;
+            listEl.appendChild(div);
         });
         document.getElementById('selfcheck-area').style.display = 'block';
     }
 
-    function showScore() {
-        quizArea.style.display = 'none';
+    document.getElementById('calc-score-btn').onclick = () => {
+        const count = document.getElementById('self-count').value;
+        showScore(count * 20);
+    };
+
+    function showScore(finalScore) {
+        document.getElementById('selfcheck-area').style.display = 'none';
         document.getElementById('score-area').style.display = 'block';
-        document.getElementById('final-score').innerText = score + '点';
+        document.getElementById('final-score').innerText = `${finalScore} 点`;
     }
 </script>
+
 </body>
 </html>
