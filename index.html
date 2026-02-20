@@ -13,7 +13,7 @@
         button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         .btn-primary { background-color: #1a73e8; color: white; }
         .btn-primary:hover { background-color: #1557b0; }
-        /* 各カテゴリのカラー */
+        /* カテゴリカラーの装飾 */
         .btn-d1 { border-left: 8px solid #3498db; }
         .btn-d2 { border-left: 8px solid #e67e22; }
         .btn-d3 { border-left: 8px solid #27ae60; }
@@ -127,7 +127,7 @@
         btnContainer.innerHTML = '';
         const unlockedLevel = parseInt(localStorage.getItem(currentCategory + '_progress')) || 1;
 
-        [1,2,3,4,5].forEach(lv => {
+        for(let lv=1; lv<=5; lv++){
             const btn = document.createElement('button');
             if (lv <= unlockedLevel) {
                 btn.className = 'btn-primary';
@@ -139,7 +139,7 @@
                 btn.onclick = () => alert("前のレベルをクリアしてね！");
             }
             btnContainer.appendChild(btn);
-        });
+        }
     }
 
     async function loadStage(cat, level) {
@@ -170,14 +170,13 @@
         
         choicesArea.innerHTML = '';
 
-        // ★ここを修正：d1 または d3 の場合は、必ず4択モード（isChoiceMode = true）にする
+        // d1(読み) または d3(使い分け) の場合は、必ず4択モード
         if (currentCategory === 'd1' || currentCategory === 'd3') {
             isChoiceMode = true;
             document.getElementById('guide').innerText = "正しいものを選んでね！";
             questionEl.innerText = current.q;
             nextBtn.style.display = 'none';
 
-            // 選択肢を表示
             [...current.choices].sort(() => 0.5 - Math.random()).forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
