@@ -67,7 +67,7 @@ function updateCategoryList() {
         const btn = document.querySelector(`.btn-${cat}`);
         if (btn) {
             const baseNames = {
-                'd1': '① 読みの試練', 'd2': '② 書きの関所', 'd3': '③ 使い分けの迷宮', 'd4': '④ 熟語の試練', 'd5': '⑤ 究極の使い分け'
+                'd1': '① 漢字の読み', 'd2': '② 漢字の書き', 'd3': '③ 漢字・語句の使い分け', 'd4': '④ 熟語の意味・使い方', 'd5': '⑤ まぎらわしい語句の使い分け'
             };
             const isCompleted = unlocked > 5;
             const displayLv = isCompleted ? 5 : unlocked;
