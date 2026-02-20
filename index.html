@@ -13,6 +13,7 @@
         button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .btn-category { margin-bottom: 8px; background-color: #ffca28; color: #333; font-size: 1.2rem; }
         .btn-level { margin-bottom: 6px; background-color: #29b6f6; color: white; }
+        .choice-btn { margin: 4px 0; background-color: #fbbc05; color: #333; }
         .btn-check { background-color: #1a73e8; color: white; }
         .btn-next { background-color: #34a853; color: white; display: none; }
         .feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
@@ -52,8 +53,13 @@
     <div id="quiz-area" style="display:none;">
         <div id="progress">第 1 問 / 5問</div>
         <div class="question-box" id="question">太陽</div>
-        <input type="text" id="answer-input" placeholder="よみがなを入力..." autocomplete="off">
-        <button class="btn-check" id="check-btn">判定する</button>
+        <div id="choices-area" style="display:none;">
+            <!-- 選択肢ボタンはここに動的生成 -->
+        </div>
+        <div id="input-area">
+            <input type="text" id="answer-input" placeholder="よみがなを入力..." autocomplete="off">
+            <button class="btn-check" id="check-btn">判定する</button>
+        </div>
         <div class="feedback" id="feedback">
             <div id="result-text" style="font-weight: bold;"></div>
             <div class="note" id="explanation"></div>
@@ -84,6 +90,8 @@
     const explEl = document.getElementById('explanation');
     const progressEl = document.getElementById('progress');
 
+    const choicesArea = document.getElementById('choices-area');
+    const inputArea = document.getElementById('input-area');
     const categoryArea = document.getElementById('category-area');
     const levelArea = document.getElementById('level-area');
     const quizArea = document.getElementById('quiz-area');
@@ -112,13 +120,12 @@
     });
 
     function showLevels(cat) {
-        levelTitle.innerText = `カテゴリ ${cat} のレベルを選択`; // もっと具体的にしたい場合は名前マップを用意
+        levelTitle.innerText = `カテゴリ ${cat} のレベルを選択`;
         categoryArea.style.display = 'none';
         levelArea.style.display = 'block';
     }
 
     function loadStage(cat, level) {
-        // JSONファイルをフェッチして quizData にセット、クイズ画面へ
         const path = `assets/json/stage_d${cat}.json`;
         fetch(path)
             .then(resp => {
@@ -146,11 +153,77 @@
     function loadQuestion() {
         const current = quizData[currentIdx];
         qEl.innerText = current.q;
-        inputEl.value = '';
         feedbackEl.style.display = 'none';
         nextBtn.style.display = 'none';
-        checkBtn.style.display = 'block';
         progressEl.innerText = `第 ${currentIdx + 1} 問 / ${quizData.length}問`;
+
+        // 選択肢の有無で入力フィールド/ボタンを切り替え
+        if (current.choices && current.choices.length > 0) {
+            // 4択
+            inputArea.style.display = 'none';
+            choicesArea.style.display = 'block';
+            populateChoices(current.choices);
+        } else {
+            // 自由入力
+            choicesArea.style.display = 'none';
+            inputArea.style.display = 'block';
+            inputEl.value = '';
+        }
+    }
+
+    function populateChoices(choices) {
+        choicesArea.innerHTML = '';
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = ' choice-btn';
+            btn.textContent = choice;
+            btn.dataset.value = choice;
+            btn.addEventListener('click', () => {
+                evaluateAnswer(choice);
+            });
+            choicesArea.appendChild(btn);
+        });
+    }
+
+    function evaluateAnswer(ans) {
+        const current = quizData[currentIdx];
+        feedbackEl.style.display = 'block';
+        nextBtn.style.display = 'block';
+        if (inputArea.style.display !== 'none') {
+            checkBtn.style.display = 'none';
+        } else {
+            // 選択肢の場合はボタン無効化
+            Array.from(choicesArea.children).forEach(b => b.disabled = true);
+        }
+
+        if (ans === current.a) {
+            resultText.innerText = '⭕ 正解！';
+            feedbackEl.className = 'feedback correct';
+            score += 20;
+        } else {
+            resultText.innerText = `❌ おしい！ 正解は「${current.a}」`;
+            feedbackEl.className = 'feedback wrong';
+        }
+        explEl.innerText = current.note || '';
+    }
+
+    checkBtn.onclick = () => {
+        evaluateAnswer(inputEl.value.trim());
+    };
+
+    nextBtn.onclick = () => {
+        currentIdx++;
+        if (currentIdx < quizData.length) {
+            loadQuestion();
+        } else {
+            showScore();
+        }
+    };
+
+    function showScore() {
+        quizArea.style.display = 'none';
+        document.getElementById('score-area').style.display = 'block';
+        document.getElementById('final-score').innerText = score + '点';
     }
 
     checkBtn.onclick = () => {
