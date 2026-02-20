@@ -98,9 +98,9 @@
 </div>
 
 <script>
-    // 【フォルダ構成の修正】JSONが assets/json/ 直下にある構成に対応
+    // フォルダ構成の修正箇所
     const CURRENT_COURSE = 'shin4_kanji'; 
-    const JSON_BASE_PATH = 'assets/json'; 
+    const JSON_BASE_PATH = 'assets/json'; // ここを単純化
     
     let currentCategory = '';
     let currentLevel = 1;
@@ -158,7 +158,7 @@
 
     async function loadStage(cat, level) {
         currentLevel = level;
-        // パスを stage_d1.json のような形式に修正
+        // 修正：assets/json/stage_d1.json となるように結合
         const filePath = `${JSON_BASE_PATH}/stage_${cat}.json`;
         console.log("Loading:", filePath);
         
