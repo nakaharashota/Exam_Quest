@@ -133,17 +133,12 @@
                 return resp.json();
             })
             .then(data => {
-                // 新しい形式: { levels: [ {level, questions}, ... ] }
-                if (data.levels && Array.isArray(data.levels)) {
-                    const lvl = data.levels.find(l => String(l.level) === String(level));
-                    if (lvl) {
-                        quizData = lvl.questions || [];
-                    } else {
-                        quizData = [];
-                        console.warn('指定レベルが見つかりません', level);
-                    }
+                // レベル情報がある新フォーマット
+                if (data && data.levels && Array.isArray(data.levels)) {
+                    const levelData = data.levels.find(l => l.level == level);
+                    quizData = levelData ? levelData.questions || [] : [];
                 } else if (Array.isArray(data)) {
-                    // 旧形式をサポート (配列直下)
+                    // 古い配列形式 (そのまま問題リスト)
                     quizData = data;
                 } else {
                     quizData = [];
@@ -161,7 +156,11 @@
         quizArea.style.display = 'block';
         currentIdx = 0;
         score = 0;
-        loadQuestion();
+        if (Array.isArray(quizData) && quizData.length > 0) {
+            loadQuestion();
+        } else {
+            console.warn('quizData は空です。問題が読み込まれていないか、level が間違っています');
+        }
     }
 
     function loadQuestion() {
