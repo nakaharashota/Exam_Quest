@@ -1,111 +1,44 @@
 /* style.css */
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+.card { background: white; border-radius: 15px; width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+h1 { color: #1a73e8; text-align: center; font-size: 1.5rem; margin-bottom: 5px; }
+.sub-title { text-align: center; color: #5f6368; font-size: 1rem; margin-bottom: 20px; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
 
-body { 
-    font-family: 'Helvetica Neue', Arial, sans-serif; 
-    background-color: #f0f2f5; 
-    display: flex; 
-    justify-content: center; 
-    padding: 20px; 
-}
+/* モード選択タブ */
+.mode-selector-top { background: #f8f9fa; padding: 12px; border-radius: 12px; margin: 0 auto 20px; text-align: center; border: 1px solid #ddd; }
+.mode-selector-top p { margin: 0 0 8px 0; font-weight: bold; color: #555; }
+.mode-tabs { display: flex; gap: 5px; justify-content: center; }
+.tab-btn { flex: 1; padding: 10px 5px; font-size: 0.85rem; border-radius: 8px; background: #eee; color: #666; margin-top: 0 !important; border: 1px solid #ccc; cursor: pointer; font-weight: bold; }
+.tab-btn.active { background: #1a73e8; color: white; border-color: #1a73e8; }
+#tab-oni.active { background: #d93025; border-color: #d93025; }
 
-.card { 
-    background: white; 
-    border-radius: 15px; 
-    width: 100%; 
-    max-width: 500px; 
-    padding: 30px; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+/* 全クリア時の星付きタブ（黄金に輝く） */
+.tab-btn.has-star::before { content: "⭐"; margin-right: 2px; }
+.tab-btn.active.has-star {
+    background: linear-gradient(135deg, #fdd663 0%, #f9ab00 100%) !important;
+    color: #333 !important; border-color: #f9ab00 !important;
+    animation: gold-glow 2s infinite alternate;
 }
+@keyframes gold-glow { from { box-shadow: 0 0 5px #fdd663; } to { box-shadow: 0 0 20px #f9ab00; } }
 
-h1 { 
-    color: #1a73e8; 
-    text-align: center; 
-    font-size: 1.5rem; 
-    margin-bottom: 5px; 
-}
+/* 解説文 */
+.explanation-text { font-size: 0.9rem; font-weight: normal; margin-top: 8px; text-align: left; border-top: 1px solid rgba(217,48,37,0.2); padding-top: 8px; line-height: 1.5; color: #444; }
 
-.sub-title { 
-    text-align: center; 
-    color: #5f6368; 
-    font-size: 1rem; 
-    margin-bottom: 20px; 
-    border-bottom: 2px solid #1a73e8; 
-    padding-bottom: 10px; 
-}
-
-/* --- モード選択タブ（空白を詰める修正） --- */
-.mode-selector-top {
-    background: #f8f9fa;
-    padding: 12px; /* 少し詰める */
-    border-radius: 12px;
-    margin: 0 auto 20px; /* 上の空白をなくす */
-    text-align: center;
-    border: 1px solid #ddd;
-}
-
-.mode-selector-top p {
-    margin: 0 0 8px 0; /* pタグの余計なマージンを消す */
-}
-
-.mode-tabs {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-}
-
-.tab-btn {
-    flex: 1;
-    padding: 10px 5px;
-    font-size: 0.85rem;
-    border-radius: 8px;
-    background: #eee;
-    color: #666;
-    margin-top: 0 !important;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.tab-btn.active {
-    background: #1a73e8;
-    color: white;
-    border-color: #1a73e8;
-}
-
-/* --- 解説文のスタイル --- */
-.explanation-text {
-    font-size: 0.9rem;
-    font-weight: normal;
-    margin-top: 8px;
-    text-align: left;
-    border-top: 1px solid rgba(217, 48, 37, 0.2);
-    padding-top: 8px;
-    line-height: 1.5;
-    color: #444;
-}
-
-/* --- 以下、既存のスタイル --- */
-.timer-container { 
-    width: 100%; height: 12px; background-color: #eee; 
-    border-radius: 6px; margin: 15px 0; overflow: hidden; display: none; 
-}
+/* クイズUI */
+.timer-container { width: 100%; height: 12px; background-color: #eee; border-radius: 6px; margin: 15px 0; overflow: hidden; display: none; }
 #timer-bar { width: 100%; height: 100%; background-color: #34a853; transition: width 0.1s linear; }
-
-.question-box { font-size: 1.8rem; text-align: center; margin: 20px 0; font-weight: bold; color: #333; }
+.question-box { font-size: 1.8rem; text-align: center; margin: 20px 0; font-weight: bold; color: #333; line-height: 1.6; }
 .guide-msg { text-align: center; color: #666; margin-bottom: 10px; font-weight: bold; }
 
-button { 
-    width: 100%; padding: 14px; font-size: 1.1rem; border: none; 
-    border-radius: 10px; cursor: pointer; margin-top: 10px; 
-}
-
+/* ボタン */
+button { width: 100%; padding: 14px; font-size: 1.1rem; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; transition: 0.1s; }
+button:active { transform: scale(0.98); }
 .btn-primary { background-color: #1a73e8; color: white; }
 .btn-d1 { border-left: 8px solid #3498db; }
 .btn-d2 { border-left: 8px solid #e67e22; }
 .btn-d3 { border-left: 8px solid #27ae60; }
 .btn-d4 { border-left: 8px solid #9b59b6; }
 .btn-d5 { border-left: 8px solid #e74c3c; }
-
 .btn-locked { background-color: #ccc !important; color: #666 !important; position: relative; }
 .btn-locked::after { content: "🔒"; position: absolute; right: 15px; }
 
@@ -114,5 +47,9 @@ button {
 .correct { background-color: #e6f4ea; color: #1e8e3e; }
 .wrong { background-color: #fce8e6; color: #d93025; }
 
+/* 結果画面 */
+#clear-msg { line-height: 1.6; font-size: 1.1rem; padding: 10px; background: #fdf7e3; border-radius: 10px; margin-bottom: 20px; }
+.answer-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 1.1rem; }
+input[type="number"] { width: 70px; padding: 10px; font-size: 1.3rem; text-align: center; border: 2px solid #ddd; border-radius: 8px; }
 .reset-link { margin-top: 50px; text-align: center; }
 .reset-link a { color: #ccc; font-size: 0.8rem; text-decoration: none; }
