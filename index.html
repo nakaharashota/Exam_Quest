@@ -13,11 +13,9 @@
         button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         .btn-primary { background-color: #1a73e8; color: white; }
         .btn-primary:hover { background-color: #1557b0; }
-        /* カテゴリカラーの装飾 */
         .btn-d1 { border-left: 8px solid #3498db; }
         .btn-d2 { border-left: 8px solid #e67e22; }
         .btn-d3 { border-left: 8px solid #27ae60; }
-        
         .btn-locked { background-color: #ccc; color: #666; cursor: not-allowed; position: relative; }
         .btn-locked::after { content: "🔒"; position: absolute; right: 15px; }
         .choice-btn { background-color: #ffffff; border: 2px solid #1a73e8; color: #1a73e8; margin-bottom: 10px; text-align: left; padding-left: 20px; }
@@ -84,7 +82,6 @@
         <h2 style="text-align:center;">結果発表</h2>
         <div id="final-score" style="font-size:3rem; text-align:center; color:#1a73e8; margin:20px 0;"></div>
         <div id="clear-msg" style="text-align:center; margin-bottom:20px; font-weight:bold; color:#1e8e3e;"></div>
-        
         <button class="btn-primary" id="retry-btn">もう一度挑戦する</button>
         <button class="btn-primary" id="next-lv-btn" style="background-color:#34a853;">次のレベルへ進む</button>
         <button style="background:#e8f0fe; color:#1a73e8;" onclick="backToLevels()">レベル選択に戻る</button>
@@ -102,23 +99,15 @@
     const TOTAL_QUESTIONS = 5;
 
     function resetData() {
-        if(confirm('今までのクリア記録をすべて消して、レベル1以外をロックしますか？')) {
-            localStorage.clear();
-            location.reload();
-        }
+        if(confirm('記録を消しますか？')) { localStorage.clear(); location.reload(); }
     }
 
     function selectCategory(cat) {
         currentCategory = cat;
         document.getElementById('category-area').style.display = 'none';
         document.getElementById('level-area').style.display = 'block';
-        
-        let title = "";
-        if(cat === 'd1') title = "【読み】レベルを選んでね";
-        else if(cat === 'd2') title = "【書き】レベルを選んでね";
-        else title = "【使い分け】レベルを選んでね";
-        
-        document.getElementById('level-title').innerText = title;
+        const titles = {'d1': '【読み】', 'd2': '【書き】', 'd3': '【使い分け】'};
+        document.getElementById('level-title').innerText = titles[cat] + "レベルを選んでね";
         renderLevels();
     }
 
@@ -126,8 +115,7 @@
         const btnContainer = document.getElementById('level-buttons');
         btnContainer.innerHTML = '';
         const unlockedLevel = parseInt(localStorage.getItem(currentCategory + '_progress')) || 1;
-
-        for(let lv=1; lv<=5; lv++){
+        for(let lv=1; lv<=5; lv++) {
             const btn = document.createElement('button');
             if (lv <= unlockedLevel) {
                 btn.className = 'btn-primary';
@@ -144,20 +132,22 @@
 
     async function loadStage(cat, level) {
         currentLevel = level;
+        const filePath = `assets/json/stage_${cat}.json`;
         try {
-            const response = await fetch(`assets/json/stage_${cat}.json`);
+            const response = await fetch(filePath);
+            if (!response.ok) throw new Error();
             const data = await response.json();
-            let allQuestions = data.levels ? (data.levels.find(l => l.level == level)?.questions || []) : data;
-
+            let allQuestions = data.levels.find(l => l.level == level).questions;
             quizData = allQuestions.sort(() => 0.5 - Math.random()).slice(0, TOTAL_QUESTIONS);
-            if (quizData.length === 0) return alert("データがありません");
-
+            
             currentIdx = 0; autoScore = 0;
             document.getElementById('level-area').style.display = 'none';
             document.getElementById('score-area').style.display = 'none';
             document.getElementById('quiz-area').style.display = 'block';
             loadQuestion();
-        } catch (e) { alert("読み込み失敗: stage_" + cat + ".json があるか確認してね"); }
+        } catch (e) { 
+            alert(`読み込み失敗！\n${filePath} が正しく配置されているか確認してください。`);
+        }
     }
 
     function loadQuestion() {
@@ -167,16 +157,13 @@
         const choicesArea = document.getElementById('choices-area');
         const nextBtn = document.getElementById('next-btn');
         const questionEl = document.getElementById('question');
-        
         choicesArea.innerHTML = '';
 
-        // d1(読み) または d3(使い分け) の場合は、必ず4択モード
         if (currentCategory === 'd1' || currentCategory === 'd3') {
             isChoiceMode = true;
             document.getElementById('guide').innerText = "正しいものを選んでね！";
             questionEl.innerText = current.q;
             nextBtn.style.display = 'none';
-
             [...current.choices].sort(() => 0.5 - Math.random()).forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
@@ -198,7 +185,6 @@
                 choicesArea.appendChild(btn);
             });
         } else {
-            // d2（書き）の場合は、ノートに書くモード
             isChoiceMode = false;
             document.getElementById('guide').innerText = "ノートに漢字を書いてね！";
             questionEl.innerText = current.q.replace('（　）', `（ ${current.k || ''} ）`);
@@ -227,30 +213,23 @@
         document.getElementById('selfcheck-area').style.display = 'block';
     }
 
-    function submitSelfScore() {
-        showScore(document.getElementById('self-count').value * 20);
-    }
+    function submitSelfScore() { showScore(document.getElementById('self-count').value * 20); }
 
     function showScore(finalScore) {
         document.getElementById('selfcheck-area').style.display = 'none';
         document.getElementById('score-area').style.display = 'block';
         document.getElementById('final-score').innerText = `${finalScore} 点`;
-
         const clearMsg = document.getElementById('clear-msg');
         const nextLvBtn = document.getElementById('next-lv-btn');
-        
         if (finalScore >= 80) {
             clearMsg.innerText = "🌟 合格！次のレベルが開放されたよ！";
             const currentUnlocked = parseInt(localStorage.getItem(currentCategory + '_progress')) || 1;
-            if (currentLevel >= currentUnlocked) {
-                localStorage.setItem(currentCategory + '_progress', currentLevel + 1);
-            }
+            if (currentLevel >= currentUnlocked) localStorage.setItem(currentCategory + '_progress', currentLevel + 1);
             nextLvBtn.style.display = currentLevel < 5 ? 'block' : 'none';
         } else {
             clearMsg.innerText = "あと少し！もう一度やってみよう。";
             nextLvBtn.style.display = 'none';
         }
-
         document.getElementById('retry-btn').onclick = () => loadStage(currentCategory, currentLevel);
         nextLvBtn.onclick = () => loadStage(currentCategory, currentLevel + 1);
     }
