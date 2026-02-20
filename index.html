@@ -21,7 +21,7 @@
         .wrong { background-color: #fce8e6; color: #d93025; }
         #selfcheck-area, #score-area, #level-area, #quiz-area { display: none; }
         .answer-item { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 1rem; }
-        input[type="number"] { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; }
+        input[type="number"] { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -36,7 +36,7 @@
     </div>
 
     <div id="level-area">
-        <button onclick="backToCategory()">← もどる</button>
+        <button onclick="location.reload()">← もどる</button>
         <div id="level-buttons"></div>
     </div>
 
@@ -49,7 +49,6 @@
 
         <div id="feedback" class="feedback">
             <div id="result-text"></div>
-            <div id="explanation" style="font-size: 0.9rem; margin-top:5px;"></div>
         </div>
 
         <button id="next-btn" class="btn-primary" style="display:none;">次へ進む</button>
@@ -62,7 +61,7 @@
         <div style="text-align:center; border-top: 2px solid #eee; padding-top:20px;">
             <p>何問正解だった？</p>
             <input type="number" id="self-count" min="0" max="5" value="0"> 問 / 5問
-            <button class="btn-primary" id="calc-score-btn">点数を出す</button>
+            <button class="btn-primary" onclick="submitSelfScore()">点数を出す</button>
         </div>
     </div>
 
@@ -70,19 +69,17 @@
         <h2 style="text-align:center;">結果発表</h2>
         <div id="final-score" style="font-size:3rem; text-align:center; color:#1a73e8; margin:20px 0;"></div>
         <button class="btn-primary" onclick="location.reload()">もう一度あそぶ</button>
-        <button style="background:#eee;" onclick="backToCategory()">カテゴリ選択へ</button>
     </div>
 </div>
 
 <script>
-    let currentCategory = '';
     let quizData = [];
     let currentIdx = 0;
-    let score = 0;
+    let autoScore = 0;
+    let isChoiceMode = false;
     const TOTAL_QUESTIONS = 5;
 
     function selectCategory(cat) {
-        currentCategory = cat;
         document.getElementById('category-area').style.display = 'none';
         const levelArea = document.getElementById('level-area');
         levelArea.style.display = 'block';
@@ -98,40 +95,34 @@
         });
     }
 
-    function backToCategory() {
-        location.reload();
-    }
-
     async function loadStage(cat, level) {
         try {
             const response = await fetch(`assets/json/stage_${cat}.json`);
             const data = await response.json();
             
-            // レベルに合った問題を取得
             let allQuestions = [];
             if (data.levels) {
                 const levelData = data.levels.find(l => l.level == level);
                 allQuestions = levelData ? levelData.questions : [];
             } else {
-                allQuestions = data; // 旧形式対応
+                allQuestions = data;
             }
 
             // シャッフルして5問選ぶ
             quizData = allQuestions.sort(() => 0.5 - Math.random()).slice(0, TOTAL_QUESTIONS);
             
             if (quizData.length === 0) {
-                alert("問題が見つかりませんでした。");
+                alert("問題がありません");
                 return;
             }
 
             currentIdx = 0;
-            score = 0;
+            autoScore = 0;
             document.getElementById('level-area').style.display = 'none';
             document.getElementById('quiz-area').style.display = 'block';
             loadQuestion();
         } catch (e) {
-            console.error(e);
-            alert("データの読み込みに失敗しました。");
+            alert("読み込みエラー");
         }
     }
 
@@ -139,56 +130,50 @@
         const current = quizData[currentIdx];
         document.getElementById('progress').innerText = `${currentIdx + 1} / ${TOTAL_QUESTIONS}`;
         document.getElementById('feedback').style.display = 'none';
-        const nextBtn = document.getElementById('next-btn');
+        
         const choicesArea = document.getElementById('choices-area');
+        const nextBtn = document.getElementById('next-btn');
         const guide = document.getElementById('guide');
+        const questionEl = document.getElementById('question');
         
         choicesArea.innerHTML = '';
-        nextBtn.style.display = 'none';
-
+        
+        // 選択肢（choices）があるかどうかでモードを判定
         if (current.choices && current.choices.length > 0) {
-            // --- 選択問題モード ---
+            isChoiceMode = true;
             guide.innerText = "正しい読みを選んでね！";
-            document.getElementById('question').innerText = current.q;
-            
+            questionEl.innerText = current.q;
+            nextBtn.style.display = 'none'; // 選択するまで隠す
+
             const shuffledChoices = [...current.choices].sort(() => 0.5 - Math.random());
             shuffledChoices.forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
                 btn.innerText = choice;
-                btn.onclick = () => evaluateChoice(choice, current.a);
+                btn.onclick = () => {
+                    Array.from(document.getElementsByClassName('choice-btn')).forEach(b => b.disabled = true);
+                    const feedback = document.getElementById('feedback');
+                    const resText = document.getElementById('result-text');
+                    if (choice === current.a) {
+                        resText.innerText = "⭕ 正解！";
+                        feedback.className = "feedback correct";
+                        autoScore += 20;
+                    } else {
+                        resText.innerText = `❌ 残念！ 正解は「${current.a}」`;
+                        feedback.className = "feedback wrong";
+                    }
+                    feedback.style.display = 'block';
+                    nextBtn.style.display = 'block';
+                };
                 choicesArea.appendChild(btn);
             });
         } else {
-            // --- 書き問題モード (ノート学習) ---
+            isChoiceMode = false;
             guide.innerText = "ノートに漢字を書いてね！";
-            // 問題文に読み仮名を挿入
-            const qText = current.q.replace('（　）', `（ ${current.k} ）`);
-            document.getElementById('question').innerText = qText;
-            
-            // 「次へ」ボタンを最初から出す
-            nextBtn.style.display = 'block';
+            // 書き問題は読み仮名を表示
+            questionEl.innerText = current.q.replace('（　）', `（ ${current.k || ''} ）`);
+            nextBtn.style.display = 'block'; // ノート用なので最初から「次へ」を出す
         }
-    }
-
-    function evaluateChoice(selected, correct) {
-        const feedback = document.getElementById('feedback');
-        const resText = document.getElementById('result-text');
-        const nextBtn = document.getElementById('next-btn');
-        
-        // ボタンを無効化
-        Array.from(document.getElementsByClassName('choice-btn')).forEach(b => b.disabled = true);
-        
-        if (selected === correct) {
-            resText.innerText = "⭕ 正解！";
-            feedback.className = "feedback correct";
-            score += 20;
-        } else {
-            resText.innerText = `❌ 残念！ 正解は「${correct}」`;
-            feedback.className = "feedback wrong";
-        }
-        feedback.style.display = 'block';
-        nextBtn.style.display = 'block';
     }
 
     document.getElementById('next-btn').onclick = () => {
@@ -196,22 +181,14 @@
         if (currentIdx < quizData.length) {
             loadQuestion();
         } else {
-            finishQuiz();
+            document.getElementById('quiz-area').style.display = 'none';
+            if (isChoiceMode) {
+                showScore(autoScore);
+            } else {
+                showSelfCheck();
+            }
         }
     };
-
-    function finishQuiz() {
-        document.getElementById('quiz-area').style.display = 'none';
-        const current = quizData[0];
-        
-        if (current.choices && current.choices.length > 0) {
-            // 選択問題なら即リザルト
-            showScore(score);
-        } else {
-            // 書き問題なら自己採点画面へ
-            showSelfCheck();
-        }
-    }
 
     function showSelfCheck() {
         const listEl = document.getElementById('answer-list');
@@ -220,19 +197,20 @@
             const div = document.createElement('div');
             div.className = 'answer-item';
             const qShow = item.q.replace('（　）', `（${item.k}）`);
-            div.innerHTML = `<strong>${idx + 1}.</strong> ${qShow} <br> <span style="color:#d93025; font-size:1.2rem; margin-left:20px;">正解：${item.a}</span>`;
+            div.innerHTML = `<strong>${idx + 1}.</strong> ${qShow} <br> <span style="color:#d93025; font-weight:bold;">正解：${item.a}</span>`;
             listEl.appendChild(div);
         });
         document.getElementById('selfcheck-area').style.display = 'block';
     }
 
-    document.getElementById('calc-score-btn').onclick = () => {
+    function submitSelfScore() {
         const count = document.getElementById('self-count').value;
         showScore(count * 20);
-    };
+    }
 
     function showScore(finalScore) {
         document.getElementById('selfcheck-area').style.display = 'none';
+        document.getElementById('quiz-area').style.display = 'none';
         document.getElementById('score-area').style.display = 'block';
         document.getElementById('final-score').innerText = `${finalScore} 点`;
     }
