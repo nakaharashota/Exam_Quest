@@ -156,7 +156,6 @@
                 // 新フォーマットでは data.levels の中に各レベルの問題群が入る
                 if (data && data.levels && Array.isArray(data.levels)) {
                     const levelData = data.levels.find(l => l.level == level);
-                    // 存在しないレベルの場合は空配列
                     quizData = levelData && Array.isArray(levelData.questions) ? levelData.questions : [];
                 } else if (Array.isArray(data)) {
                     // 旧フォーマット（直接配列）にも対応
@@ -164,9 +163,10 @@
                 } else {
                     quizData = [];
                 }
-                // 問題順をランダム化（後で5問抽出予定）
+                // リストをシャッフルして先頭5問を抽出
                 if (Array.isArray(quizData) && quizData.length > 1) {
                     shuffleArray(quizData);
+                    quizData = quizData.slice(0, 5);
                 }
                 startQuiz();
             })
@@ -182,10 +182,6 @@
         currentIdx = 0;
         score = 0;
         if (Array.isArray(quizData) && quizData.length > 0) {
-            // セッションは5問まで
-            if (quizData.length > 5) {
-                quizData = quizData.slice(0, 5);
-            }
             loadQuestion();
         } else {
             console.warn('quizData は空です。問題が読み込まれていないか、level が間違っています');
@@ -214,17 +210,10 @@
         if (current.choices && current.choices.length > 0) {
             // 読み問題 (4択)
             choicesArea.style.display = 'block';
-            // 配列をシャッフルしてから表示（常に1番が正解になるバグ対策）
-            const shuffled = [...current.choices];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            populateChoices(shuffled);
         } else {
             // 書き問題 (ノート学習モード)
             document.getElementById('input-label').innerText = 'ノートに書いたら「次へ」を押してね';
-            // 画面には next ボタンだけ表示
+            // 次へボタンは常に表示
             nextBtn.style.display = 'block';
         }
     }
@@ -282,12 +271,19 @@
 
     // 次へボタン
     nextBtn.onclick = () => {
+        const last = quizData[currentIdx];
         currentIdx++;
         if (currentIdx < quizData.length && quizData[currentIdx]) {
             loadQuestion();
         } else {
-            // 全5問終了後は自己採点画面へ
-            showSelfCheck();
+            // 終了時の挙動は問題タイプで分岐
+            if (last && last.choices && last.choices.length > 0) {
+                // 選択問題は自動スコア画面へ
+                showScore();
+            } else {
+                // 書き問題は自己採点を挟む
+                showSelfCheck();
+            }
         }
     };
 
