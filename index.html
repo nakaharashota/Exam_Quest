@@ -57,7 +57,7 @@
             <!-- 選択肢ボタンはここに動的生成 -->
         </div>
         <div id="input-area">
-            <input type="text" id="answer-input" placeholder="よみがなを入力..." autocomplete="off">
+            <input type="text" id="answer-input" placeholder="漢字を入力..." autocomplete="off">
             <button class="btn-check" id="check-btn">判定する</button>
         </div>
         <div class="feedback" id="feedback">
@@ -133,12 +133,13 @@
                 return resp.json();
             })
             .then(data => {
-                // レベル情報がある新フォーマット
+                // 新フォーマットでは data.levels の中に各レベルの問題群が入る
                 if (data && data.levels && Array.isArray(data.levels)) {
                     const levelData = data.levels.find(l => l.level == level);
-                    quizData = levelData ? levelData.questions || [] : [];
+                    // 存在しないレベルの場合は空配列
+                    quizData = levelData && Array.isArray(levelData.questions) ? levelData.questions : [];
                 } else if (Array.isArray(data)) {
-                    // 古い配列形式 (そのまま問題リスト)
+                    // 旧フォーマット（直接配列）にも対応
                     quizData = data;
                 } else {
                     quizData = [];
@@ -172,15 +173,23 @@
 
         // 選択肢の有無で入力フィールド/ボタンを切り替え
         if (current.choices && current.choices.length > 0) {
-            // 4択
+            // 4択問題
             inputArea.style.display = 'none';
             choicesArea.style.display = 'block';
-            populateChoices(current.choices);
+            // 配列をシャッフルしてから表示（常に1番が正解になるバグ対策）
+            const shuffled = [...current.choices];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            populateChoices(shuffled);
         } else {
-            // 自由入力
+            // 書き問題（自由入力）
             choicesArea.style.display = 'none';
             inputArea.style.display = 'block';
             inputEl.value = '';
+            // プレースホルダーは漢字回答向けに変更
+            inputEl.placeholder = '漢字で答えてください';
         }
     }
 
@@ -202,14 +211,16 @@
         const current = quizData[currentIdx];
         feedbackEl.style.display = 'block';
         nextBtn.style.display = 'block';
-        // 常に判定ボタンは隠す（次へへ誘導）
+        // 判定ボタンは隠す（次へへ誘導）
         checkBtn.style.display = 'none';
-        if (inputArea.style.display === 'none') {
-            // 選択肢の場合はボタン無効化
+
+        // 選択肢があればボタンを無効化して比較
+        if (current.choices && current.choices.length > 0) {
             Array.from(choicesArea.children).forEach(b => b.disabled = true);
         }
 
-        if (ans === current.a) {
+        const correct = ans === current.a;
+        if (correct) {
             resultText.innerText = '⭕ 正解！';
             feedbackEl.className = 'feedback correct';
             score += 20;
