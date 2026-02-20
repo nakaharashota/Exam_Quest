@@ -98,9 +98,9 @@
 </div>
 
 <script>
-    // フォルダ構成の修正箇所
     const CURRENT_COURSE = 'shin4_kanji'; 
-    const JSON_BASE_PATH = 'assets/json'; // ここを単純化
+    // 【フォルダ構成修正】index.htmlと同じ場所にJSONがあるため空にする
+    const JSON_BASE_PATH = '.'; 
     
     let currentCategory = '';
     let currentLevel = 1;
@@ -158,7 +158,7 @@
 
     async function loadStage(cat, level) {
         currentLevel = level;
-        // 修正：assets/json/stage_d1.json となるように結合
+        // 【フォルダ構成修正】直接ファイル名（stage_d1.jsonなど）を叩く
         const filePath = `${JSON_BASE_PATH}/stage_${cat}.json`;
         console.log("Loading:", filePath);
         
@@ -180,7 +180,7 @@
             loadQuestion();
         } catch (e) { 
             console.error(e);
-            alert(`読み込み失敗：${filePath}\nフォルダ構成を確認してください。`);
+            alert(`読み込み失敗：${filePath}\nファイルが存在するか確認してください。`);
         }
     }
 
