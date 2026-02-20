@@ -24,6 +24,9 @@
         #selfcheck-area, #score-area, #level-area, #quiz-area { display: none; }
         .answer-item { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 1rem; }
         input[type="number"] { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
+        .mode-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #eee; text-align: center; }
+        .reset-link { margin-top: 50px; text-align: center; }
+        .reset-link a { color: #ccc; font-size: 0.8rem; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -32,13 +35,23 @@
     <h1>Exam_Quest</h1>
 
     <div id="category-area">
-        <p style="text-align:center;">モードを選んでね</p>
+        <p style="text-align:center;">カテゴリを選んでね</p>
         <button class="btn-primary" onclick="selectCategory('d1')">① 読みの試練（4択）</button>
         <button class="btn-primary" onclick="selectCategory('d2')">② 書きの関所（ノート）</button>
+        <button class="btn-primary" style="background-color:#999;">③ 使い分けの迷宮（準備中）</button>
+
+        <div class="mode-section">
+            <p style="color:#888; font-size:0.9rem;">【現在のモード：じっくり学習】</p>
+            <button disabled style="background:#eee; color:#aaa; cursor:default;">⏱ タイムアタック（開発中）</button>
+        </div>
+
+        <div class="reset-link">
+            <a href="#" onclick="resetData()">進捗をリセットして最初から始める</a>
+        </div>
     </div>
 
     <div id="level-area">
-        <button style="background:#eee;" onclick="location.reload()">← モード選択に戻る</button>
+        <button style="background:#eee;" onclick="location.reload()">← もどる</button>
         <p id="level-title" style="text-align:center; font-weight:bold; margin-top:15px;"></p>
         <div id="level-buttons"></div>
     </div>
@@ -67,7 +80,7 @@
         <div id="final-score" style="font-size:3rem; text-align:center; color:#1a73e8; margin:20px 0;"></div>
         <div id="clear-msg" style="text-align:center; margin-bottom:20px; font-weight:bold; color:#1e8e3e;"></div>
         
-        <button class="btn-primary" id="retry-btn">このレベルをもう一度</button>
+        <button class="btn-primary" id="retry-btn">もう一度挑戦する</button>
         <button class="btn-primary" id="next-lv-btn" style="background-color:#34a853;">次のレベルへ進む</button>
         <button style="background:#e8f0fe; color:#1a73e8;" onclick="backToLevels()">レベル選択に戻る</button>
         <button style="background:#eee;" onclick="location.reload()">トップに戻る</button>
@@ -83,6 +96,13 @@
     let isChoiceMode = false;
     const TOTAL_QUESTIONS = 5;
 
+    function resetData() {
+        if(confirm('今までのクリア記録をすべて消して、レベル1以外をロックしますか？')) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
     function selectCategory(cat) {
         currentCategory = cat;
         document.getElementById('category-area').style.display = 'none';
@@ -94,8 +114,6 @@
     function renderLevels() {
         const btnContainer = document.getElementById('level-buttons');
         btnContainer.innerHTML = '';
-        
-        // ローカルストレージから進捗を読み込む (例: d1_progress)
         const unlockedLevel = parseInt(localStorage.getItem(currentCategory + '_progress')) || 1;
 
         [1,2,3,4,5].forEach(lv => {
@@ -206,7 +224,6 @@
         const clearMsg = document.getElementById('clear-msg');
         const nextLvBtn = document.getElementById('next-lv-btn');
         
-        // 80点以上で合格（レベル開放）
         if (finalScore >= 80) {
             clearMsg.innerText = "🌟 合格！次のレベルが開放されたよ！";
             const currentUnlocked = parseInt(localStorage.getItem(currentCategory + '_progress')) || 1;
