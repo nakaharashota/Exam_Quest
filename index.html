@@ -3,9 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam_Quest</title>
+    <title>Exam_Quest | 漢字攻略</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; border-radius: 15px; shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h1 { color: #1a73e8; text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
+        .question-box { font-size: 2rem; text-align: center; margin: 30px 0; font-weight: bold; color: #333; }
+        input[type="text"] { width: 100%; padding: 12px; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
+        button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .btn-check { background-color: #1a73e8; color: white; }
+        .btn-next { background-color: #34a853; color: white; display: none; }
+        .feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
+        .correct { background-color: #e6f4ea; color: #1e8e3e; border: 1px solid #1e8e3e; }
+        .wrong { background-color: #fce8e6; color: #d93025; border: 1px solid #d93025; }
+        .note { font-size: 0.9rem; margin-top: 10px; color: #555; line-height: 1.5; }
+        .score-screen { text-align: center; display: none; }
+    </style>
 </head>
 <body>
-    <h1>Exam_Quest 起動確認</h1>
+
+<div class="card" id="game-container">
+    <h1>⚔️ Exam_Quest 漢字編</h1>
+    <div id="quiz-area">
+        <div id="progress">第 1 問 / 5問</div>
+        <div class="question-box" id="question">太陽</div>
+        <input type="text" id="answer-input" placeholder="よみがなを入力..." autocomplete="off">
+        <button class="btn-check" id="check-btn">判定する</button>
+        <div class="feedback" id="feedback">
+            <div id="result-text" style="font-weight: bold;"></div>
+            <div class="note" id="explanation"></div>
+            <button class="btn-next" id="next-btn" style="margin-top: 15px;">次の問題へ ➔</button>
+        </div>
+    </div>
+
+    <div class="score-screen" id="score-area">
+        <h2>結果発表</h2>
+        <div style="font-size: 3rem; margin: 20px 0;" id="final-score">0点</div>
+        <button class="btn-check" onclick="location.reload()">もう一度挑戦する</button>
+    </div>
+</div>
+
+<script>
+    // ここに漢字データを追加していく（とりあえず5問）
+    const quizData = [
+        { q: "太陽", a: "たいよう", note: "「太」に点を忘れないで！犬（いぬ）じゃないよ。" },
+        { q: "返事", a: "へんじ", note: "「しんにょう」の形に気をつけて書こう。" },
+        { q: "練習", a: "れんしゅう", note: "「習」の字は、羽（はね）と白からできているよ。" },
+        { q: "場所", a: "ばしょ", note: "「場」の右側は「お日さま」がのぼる様子を表しているよ。" },
+        { q: "世界", a: "せかい", note: "「界」は田んぼと、そのさかい目を表しているよ。" }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+
+    const qEl = document.getElementById('question');
+    const inputEl = document.getElementById('answer-input');
+    const checkBtn = document.getElementById('check-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const feedbackEl = document.getElementById('feedback');
+    const resultText = document.getElementById('result-text');
+    const explEl = document.getElementById('explanation');
+    const progressEl = document.getElementById('progress');
+
+    function loadQuestion() {
+        const current = quizData[currentIdx];
+        qEl.innerText = current.q;
+        inputEl.value = "";
+        feedbackEl.style.display = "none";
+        nextBtn.style.display = "none";
+        checkBtn.style.display = "block";
+        progressEl.innerText = `第 ${currentIdx + 1} 問 / ${quizData.length}問`;
+    }
+
+    checkBtn.onclick = () => {
+        const userAns = inputEl.value.trim();
+        const current = quizData[currentIdx];
+        feedbackEl.style.display = "block";
+        checkBtn.style.display = "none";
+        nextBtn.style.display = "block";
+
+        if (userAns === current.a) {
+            resultText.innerText = "⭕ 正解！";
+            feedbackEl.className = "feedback correct";
+            score += 20;
+        } else {
+            resultText.innerText = `❌ おしい！ 正解は「${current.a}」`;
+            feedbackEl.className = "feedback wrong";
+        }
+        explEl.innerText = current.note;
+    };
+
+    nextBtn.onclick = () => {
+        currentIdx++;
+        if (currentIdx < quizData.length) {
+            loadQuestion();
+        } else {
+            showScore();
+        }
+    };
+
+    function showScore() {
+        document.getElementById('quiz-area').style.display = "none";
+        document.getElementById('score-area').style.display = "block";
+        document.getElementById('final-score').innerText = score + "点";
+    }
+
+    loadQuestion();
+</script>
 </body>
 </html>
