@@ -99,8 +99,8 @@
 
 <script>
     const CURRENT_COURSE = 'shin4_kanji'; 
-    // 【フォルダ構成修正】index.htmlと同じ場所にJSONがあるため空にする
-    const JSON_BASE_PATH = '.'; 
+    // ★★★ ここを絶対に間違えないように修正しました ★★★
+    const JSON_BASE_PATH = 'assets/json/shin4_kanji'; 
     
     let currentCategory = '';
     let currentLevel = 1;
@@ -158,9 +158,8 @@
 
     async function loadStage(cat, level) {
         currentLevel = level;
-        // 【フォルダ構成修正】直接ファイル名（stage_d1.jsonなど）を叩く
+        // これで assets/json/shin4_kanji/stage_d1.json になります
         const filePath = `${JSON_BASE_PATH}/stage_${cat}.json`;
-        console.log("Loading:", filePath);
         
         try {
             const response = await fetch(filePath);
@@ -180,7 +179,7 @@
             loadQuestion();
         } catch (e) { 
             console.error(e);
-            alert(`読み込み失敗：${filePath}\nファイルが存在するか確認してください。`);
+            alert(`読み込み失敗：${filePath}\nフォルダ構成（assets/json/shin4_kanji/）を再確認してください。`);
         }
     }
 
@@ -221,6 +220,7 @@
         } else {
             isChoiceMode = false;
             document.getElementById('guide').innerText = "ノートに漢字を書いてね！";
+            // jsonの k プロパティをヒントとして表示
             questionEl.innerText = current.q.replace('（　）', `（ ${current.k || ''} ）`);
             nextBtn.style.display = 'block';
         }
