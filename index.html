@@ -234,19 +234,26 @@
                 btn.className = 'choice-btn';
                 btn.innerText = choice;
                 btn.onclick = () => {
-                    Array.from(document.getElementsByClassName('choice-btn')).forEach(b => b.disabled = true);
-                    const feedback = document.getElementById('feedback');
-                    if (choice === current.a) {
-                        document.getElementById('result-text').innerText = "⭕ 正解！";
-                        feedback.className = "feedback correct";
-                        correctCount++;
-                    } else {
-                        document.getElementById('result-text').innerText = `❌ 残念！ 正解は「${current.a}」`;
-                        feedback.className = "feedback wrong";
-                    }
-                    feedback.style.display = 'block';
-                    nextBtn.style.display = 'block';
-                };
+    Array.from(document.getElementsByClassName('choice-btn')).forEach(b => b.disabled = true);
+    const feedback = document.getElementById('feedback');
+    const resultText = document.getElementById('result-text');
+    
+    if (choice === current.a) {
+        resultText.innerHTML = "⭕ 正解！";
+        feedback.className = "feedback correct";
+        correctCount++;
+    } else {
+        // 不正解のとき：正解の提示 ＋ 解説文(あれば)を表示
+        let msg = `❌ 残念！ 正解は「${current.a}」`;
+        if (current.comment) {
+            msg += `<br><div style="font-size:0.9rem; font-weight:normal; margin-top:8px; text-align:left; border-top:1px solid rgba(217,48,37,0.2); padding-top:8px;">${current.comment}</div>`;
+        }
+        resultText.innerHTML = msg;
+        feedback.className = "feedback wrong";
+    }
+    feedback.style.display = 'block';
+    nextBtn.style.display = 'block';
+};
                 choicesArea.appendChild(btn);
             });
         } else {
