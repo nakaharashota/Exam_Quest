@@ -24,16 +24,18 @@
         .choice-btn { background-color: #ffffff; border: 2px solid #1a73e8; color: #1a73e8; margin-bottom: 10px; text-align: left; padding-left: 20px; }
         .choice-btn:hover:not(:disabled) { background-color: #e8f0fe; }
         .choice-btn:disabled { opacity: 0.8; color: #333; }
+        
         .feedback { padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; font-weight: bold; }
         .correct { background-color: #e6f4ea; color: #1e8e3e; }
         .wrong { background-color: #fce8e6; color: #d93025; }
         
-        /* 解説エリアのスタイルのみ追加 */
+        /* 解説表示用スタイル */
         .exp-box { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 5px; font-size: 0.9rem; color: #444; text-align: left; font-weight: normal; border: 1px dashed #d93025; line-height: 1.4; }
 
         #selfcheck-area, #score-area, #level-area, #quiz-area { display: none; }
         .answer-item { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 1rem; }
         input[type="number"] { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
+        .mode-section { text-align: center; margin-bottom: 20px; }
         .reset-link { margin-top: 50px; text-align: center; }
         .reset-link a { color: #ccc; font-size: 0.8rem; text-decoration: none; }
     </style>
@@ -45,6 +47,11 @@
     <div class="sub-title">〜新4年生漢字編〜</div>
 
     <div id="category-area">
+        <div class="mode-section">
+            <p style="color:#888; font-size:0.9rem;">【現在のモード：じっくり学習】</p>
+            <button disabled style="background:#eee; color:#aaa; cursor:default;">⏱ タイムアタック（開発中）</button>
+        </div>
+
         <p style="text-align:center;">攻略カテゴリを選択！</p>
         <button class="btn-primary btn-d1" onclick="selectCategory('d1')">① 読みの試練（4択）</button>
         <button class="btn-primary btn-d2" onclick="selectCategory('d2')">② 書きの関所（ノート）</button>
@@ -61,7 +68,6 @@
     </div>
 
     <div id="quiz-area">
-        <div style="text-align:center; color:#d93025; font-size:0.9rem; margin-bottom:10px;">タイムアタックモード（開発中）</div>
         <div id="progress" style="text-align:right; color:#888;"></div>
         <div id="guide" class="guide-msg"></div>
         <div id="question" class="question-box"></div>
@@ -194,7 +200,7 @@
                     } else {
                         document.getElementById('result-text').innerText = `❌ 正解は「${current.a}」`;
                         feedback.className = "feedback wrong";
-                        // 解説文があれば表示
+                        // 解説があれば表示
                         if (current.explanation) {
                             expArea.innerHTML = `💡 <b>攻略ヒント:</b> ${current.explanation}`;
                             expArea.style.display = 'block';
