@@ -11,6 +11,8 @@
         .question-box { font-size: 2rem; text-align: center; margin: 30px 0; font-weight: bold; color: #333; }
         input[type="text"] { width: 100%; padding: 12px; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
         button { width: 100%; padding: 12px; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .btn-category { margin-bottom: 8px; background-color: #ffca28; color: #333; font-size: 1.2rem; }
+        .btn-level { margin-bottom: 6px; background-color: #29b6f6; color: white; }
         .btn-check { background-color: #1a73e8; color: white; }
         .btn-next { background-color: #34a853; color: white; display: none; }
         .feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
@@ -24,7 +26,30 @@
 
 <div class="card" id="game-container">
     <h1>⚔️ Exam_Quest 漢字編</h1>
-    <div id="quiz-area">
+    
+    <!--カテゴリ選択画面-->
+    <div id="category-area">
+        <p>挑戦したいカテゴリを選択してください</p>
+        <button class="btn-category" data-cat="1">① 読みの試練</button>
+        <button class="btn-category" data-cat="2">② 書きの試練</button>
+        <button class="btn-category" data-cat="3">③ 四字熟語の塔</button>
+        <button class="btn-category" data-cat="4">④ 漢字クイズ道場</button>
+        <button class="btn-category" data-cat="5">⑤ 間違い探しの城</button>
+    </div>
+
+    <!--レベル選択画面-->
+    <div id="level-area" style="display:none;">
+        <p id="level-title">レベルを選んでください</p>
+        <button class="btn-level" data-level="1">Lv.1</button>
+        <button class="btn-level" data-level="2">Lv.2</button>
+        <button class="btn-level" data-level="3">Lv.3</button>
+        <button class="btn-level" data-level="4">Lv.4</button>
+        <button class="btn-level" data-level="5">Lv.5</button>
+        <button id="back-to-cat" style="margin-top:10px;">◀ カテゴリへ戻る</button>
+    </div>
+
+    <!--クイズ部分-->
+    <div id="quiz-area" style="display:none;">
         <div id="progress">第 1 問 / 5問</div>
         <div class="question-box" id="question">太陽</div>
         <input type="text" id="answer-input" placeholder="よみがなを入力..." autocomplete="off">
@@ -36,7 +61,7 @@
         </div>
     </div>
 
-    <div class="score-screen" id="score-area">
+    <div class="score-screen" id="score-area" style="display:none;">
         <h2>結果発表</h2>
         <div style="font-size: 3rem; margin: 20px 0;" id="final-score">0点</div>
         <button class="btn-check" onclick="location.reload()">もう一度挑戦する</button>
@@ -44,17 +69,11 @@
 </div>
 
 <script>
-    // ここに漢字データを追加していく（とりあえず5問）
-    const quizData = [
-        { q: "太陽", a: "たいよう", note: "「太」に点を忘れないで！犬（いぬ）じゃないよ。" },
-        { q: "返事", a: "へんじ", note: "「しんにょう」の形に気をつけて書こう。" },
-        { q: "練習", a: "れんしゅう", note: "「習」の字は、羽（はね）と白からできているよ。" },
-        { q: "場所", a: "ばしょ", note: "「場」の右側は「お日さま」がのぼる様子を表しているよ。" },
-        { q: "世界", a: "せかい", note: "「界」は田んぼと、そのさかい目を表しているよ。" }
-    ];
-
+    let quizData = [];
     let currentIdx = 0;
     let score = 0;
+    let selectedCategory = null;
+    let selectedLevel = null;
 
     const qEl = document.getElementById('question');
     const inputEl = document.getElementById('answer-input');
@@ -65,32 +84,91 @@
     const explEl = document.getElementById('explanation');
     const progressEl = document.getElementById('progress');
 
+    const categoryArea = document.getElementById('category-area');
+    const levelArea = document.getElementById('level-area');
+    const quizArea = document.getElementById('quiz-area');
+    const levelTitle = document.getElementById('level-title');
+    const backToCatBtn = document.getElementById('back-to-cat');
+
+    // カテゴリボタンにイベント
+    document.querySelectorAll('.btn-category').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedCategory = btn.dataset.cat;
+            showLevels(selectedCategory);
+        });
+    });
+
+    // レベルボタン
+    document.querySelectorAll('.btn-level').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedLevel = btn.dataset.level;
+            loadStage(selectedCategory, selectedLevel);
+        });
+    });
+
+    backToCatBtn.addEventListener('click', () => {
+        levelArea.style.display = 'none';
+        categoryArea.style.display = 'block';
+    });
+
+    function showLevels(cat) {
+        levelTitle.innerText = `カテゴリ ${cat} のレベルを選択`; // もっと具体的にしたい場合は名前マップを用意
+        categoryArea.style.display = 'none';
+        levelArea.style.display = 'block';
+    }
+
+    function loadStage(cat, level) {
+        // JSONファイルをフェッチして quizData にセット、クイズ画面へ
+        const path = `assets/json/stage_d${cat}.json`;
+        fetch(path)
+            .then(resp => {
+                if (!resp.ok) throw new Error('読み込み失敗');
+                return resp.json();
+            })
+            .then(data => {
+                quizData = data;
+                startQuiz();
+            })
+            .catch(err => {
+                alert('問題データの読み込みに失敗しました');
+                console.error(err);
+            });
+    }
+
+    function startQuiz() {
+        levelArea.style.display = 'none';
+        quizArea.style.display = 'block';
+        currentIdx = 0;
+        score = 0;
+        loadQuestion();
+    }
+
     function loadQuestion() {
         const current = quizData[currentIdx];
         qEl.innerText = current.q;
-        inputEl.value = "";
-        feedbackEl.style.display = "none";
-        nextBtn.style.display = "none";
-        checkBtn.style.display = "block";
+        inputEl.value = '';
+        feedbackEl.style.display = 'none';
+        nextBtn.style.display = 'none';
+        checkBtn.style.display = 'block';
         progressEl.innerText = `第 ${currentIdx + 1} 問 / ${quizData.length}問`;
     }
 
     checkBtn.onclick = () => {
         const userAns = inputEl.value.trim();
         const current = quizData[currentIdx];
-        feedbackEl.style.display = "block";
-        checkBtn.style.display = "none";
-        nextBtn.style.display = "block";
+        feedbackEl.style.display = 'block';
+        checkBtn.style.display = 'none';
+        nextBtn.style.display = 'block';
 
         if (userAns === current.a) {
-            resultText.innerText = "⭕ 正解！";
-            feedbackEl.className = "feedback correct";
+            resultText.innerText = '⭕ 正解！';
+            feedbackEl.className = 'feedback correct';
             score += 20;
         } else {
             resultText.innerText = `❌ おしい！ 正解は「${current.a}」`;
-            feedbackEl.className = "feedback wrong";
+            feedbackEl.className = 'feedback wrong';
         }
-        explEl.innerText = current.note;
+        explEl.innerText = current.note || '';
     };
 
     nextBtn.onclick = () => {
@@ -103,12 +181,10 @@
     };
 
     function showScore() {
-        document.getElementById('quiz-area').style.display = "none";
-        document.getElementById('score-area').style.display = "block";
-        document.getElementById('final-score').innerText = score + "点";
+        quizArea.style.display = 'none';
+        document.getElementById('score-area').style.display = 'block';
+        document.getElementById('final-score').innerText = score + '点';
     }
-
-    loadQuestion();
 </script>
 </body>
 </html>
