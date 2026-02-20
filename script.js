@@ -40,34 +40,48 @@ function getModeName(m) {
 }
 
 function updateCategoryList() {
-    // タブのアクティブ状態をリセット
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'has-star'));
+    // 全てのタブからアクティブ状態と星表示をリセット
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        // 既存の星を消去（テキストを元のモード名に戻す）
+        const mode = btn.id.replace('tab-', '');
+        btn.innerText = getModeName(mode);
+    });
     
     const cats = ['d1', 'd2', 'd3', 'd4', 'd5'];
-    
-    // 各モード（タブ）に星がつくか判定
     const modes = ['easy', 'normal', 'hard', 'oni'];
+
     modes.forEach(m => {
         let completedInMode = 0;
         cats.forEach(cat => {
-            if (parseInt(localStorage.getItem(`shin4_${cat}_${m}_progress`)) > 5) completedInMode++;
+            // 全レベルクリア（progress > 5）をカウント
+            if (parseInt(localStorage.getItem(`shin4_${cat}_${m}_progress`)) > 5) {
+                completedInMode++;
+            }
         });
-        if (completedInMode === 5) {
-            document.getElementById(`tab-${m}`).classList.add('has-star');
+
+        const tabBtn = document.getElementById(`tab-${m}`);
+        if (tabBtn) {
+            // モード名の右側に星を表示（演出用のクラス追加は廃止）
+            if (completedInMode === 5) {
+                tabBtn.innerText = `${getModeName(m)} ⭐`;
+            } else {
+                tabBtn.innerText = getModeName(m);
+            }
         }
     });
 
-    // 現在のタブをアクティブに
+    // 現在のタブをアクティブにする（背景色は共通のCSSに従う）
     document.getElementById(`tab-${currentMode}`).classList.add('active');
 
-    // カテゴリボタンのLvと星表示
+    // カテゴリボタンの更新
     cats.forEach(cat => {
         const storageKey = `shin4_${cat}_${currentMode}_progress`;
         const unlocked = parseInt(localStorage.getItem(storageKey)) || 1;
         const btn = document.querySelector(`.btn-${cat}`);
         if (btn) {
             const baseNames = {
-                'd1': '① 漢字の読み', 'd2': '② 漢字の書き', 'd3': '③ 漢字・語句の使い分け', 'd4': '④ 熟語の意味・使い方', 'd5': '⑤ まぎらわしい語句の使い分け'
+                'd1': '① 読みの試練', 'd2': '② 書きの関所', 'd3': '③ 使い分けの迷宮', 'd4': '④ 熟語の試練', 'd5': '⑤ 究極の使い分け'
             };
             const isCompleted = unlocked > 5;
             const displayLv = isCompleted ? 5 : unlocked;
