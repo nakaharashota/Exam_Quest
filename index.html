@@ -75,6 +75,14 @@
         <button class="btn-check" id="retry-btn">もう一度挑戦する</button>
         <button class="btn-check" id="restart-btn" style="margin-top:8px;">最初に戻る</button>
     </div>
+
+    <!-- 自己採点用画面 -->
+    <div class="score-screen" id="selfcheck-area" style="display:none;">
+        <h2>答え合わせ</h2>
+        <div id="answer-list" style="text-align:left; margin:10px 0;"></div>
+        <label>何問正解した？ <input type="number" id="self-count" min="0" max="5" value="0" style="width:4rem;"></label>
+        <button class="btn-check" id="calc-score-btn" style="margin-top:10px;">点数を出す</button>
+    </div>
 </div>
 
 <script>
@@ -188,22 +196,23 @@
         const current = quizData[currentIdx];
         // 書き問題の場合は k を使ってヒント表示
         if ((!current.choices || current.choices.length === 0) && current.k) {
-            // 元の q にある「（　）」を埋めるヒントを表示
             qEl.innerText = current.q.replace('（　）', `（${current.k}）`);
         } else {
             qEl.innerText = current.q;
         }
         feedbackEl.style.display = 'none';
-        nextBtn.style.display = 'none';
         progressEl.innerText = `第 ${currentIdx + 1} 問 / ${quizData.length}問`;
 
         // ラベル初期化
         document.getElementById('input-label').innerText = '';
+        // 回答エリア初期化
+        inputArea.style.display = 'none';
+        choicesArea.style.display = 'none';
+        checkBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
 
-        // 選択肢の有無で入力フィールド/ボタンを切り替え
         if (current.choices && current.choices.length > 0) {
-            // 4択問題
-            inputArea.style.display = 'none';
+            // 読み問題 (4択)
             choicesArea.style.display = 'block';
             // 配列をシャッフルしてから表示（常に1番が正解になるバグ対策）
             const shuffled = [...current.choices];
@@ -213,12 +222,10 @@
             }
             populateChoices(shuffled);
         } else {
-            // 書き問題（自由入力）
-            choicesArea.style.display = 'none';
-            inputArea.style.display = 'block';
-            inputEl.value = '';
-            inputEl.placeholder = '漢字で答えてください';
-            document.getElementById('input-label').innerText = 'ノートに漢字を書いてね！';
+            // 書き問題 (ノート学習モード)
+            document.getElementById('input-label').innerText = 'ノートに書いたら「次へ」を押してね';
+            // 画面には next ボタンだけ表示
+            nextBtn.style.display = 'block';
         }
     }
 
@@ -279,8 +286,8 @@
         if (currentIdx < quizData.length && quizData[currentIdx]) {
             loadQuestion();
         } else {
-            // 配列外または undefined なら即リザルト
-            showScore();
+            // 全5問終了後は自己採点画面へ
+            showSelfCheck();
         }
     };
 
@@ -293,6 +300,29 @@
         document.getElementById('score-area').style.display = 'none';
         categoryArea.style.display = 'block';
     });
+    // 自己採点用ボタン
+    document.getElementById('calc-score-btn').addEventListener('click', () => {
+        const count = parseInt(document.getElementById('self-count').value, 10) || 0;
+        score = count * 20;
+        document.getElementById('selfcheck-area').style.display = 'none';
+        showScore();
+    });
+
+    function showSelfCheck() {
+        quizArea.style.display = 'none';
+        const listEl = document.getElementById('answer-list');
+        listEl.innerHTML = '';
+        quizData.forEach((item, idx) => {
+            const text = (item.choices && item.choices.length > 0)
+                ? item.q
+                : item.q.replace('（　）', `（${item.k || ''}）`);
+            const p = document.createElement('p');
+            p.style.margin = '4px 0';
+            p.textContent = `${idx + 1}. ${text} → ${item.a}`;
+            listEl.appendChild(p);
+        });
+        document.getElementById('selfcheck-area').style.display = 'block';
+    }
 
     function showScore() {
         quizArea.style.display = 'none';
